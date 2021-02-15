@@ -1,0 +1,10 @@
+<resources>
+
+    <string name="pref_key">com.misit.faceidchecklogptabp</string>
+    <string name="app_name">Face Id PT. ABP Energy</string>
+    <string name="APP_ADMOB_ID">ca-app-pub-5972533139163141~9698907454</string>
+    <string name="APP_ADMOB_ID_BANNER">ca-app-pub-5972533139163141/7494458082</string>
+    <string name="APP_ADMOB_ID_NATIVE_ADVANCED">ca-app-pub-5972533139163141/4047899600</string>
+    <string name="banner_test">ca-app-pub-3940256099942544/6300978111</string>
+    <string name="cari_karyawan_masukan">Cari Karyawan / Masukan</string>
+</resources>

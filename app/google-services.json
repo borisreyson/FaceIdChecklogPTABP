@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "220949839766",
+    "firebase_url": "https://faceidchecklogptabp.firebaseio.com",
+    "project_id": "faceidchecklogptabp",
+    "storage_bucket": "faceidchecklogptabp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:220949839766:android:b2d01420e95eea2ff727b7",
+        "android_client_info": {
+          "package_name": "com.misit.faceidchecklogptabp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "220949839766-l9ffbre3r3to755ntrm8vip6pf81vgdi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.misit.faceidchecklogptabp",
+            "certificate_hash": "f559702a7ce90759eb7e1edccd5d95647073ffba"
+          }
+        },
+        {
+          "client_id": "220949839766-kraaj5d6kr4mjfa4kcdmc40t350ra751.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCUobV1PibQMimlrLofj2h5m1QOAbTIk5E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "220949839766-kraaj5d6kr4mjfa4kcdmc40t350ra751.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      },
+      "admob_app_id": "ca-app-pub-5972533139163141~9698907454"
+    }
+  ],
+  "configuration_version": "1"
+}
