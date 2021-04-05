@@ -78,12 +78,12 @@ class IndexActivity : AppCompatActivity(),View.OnClickListener, LocationListener
     private var mLocation : Location?= null
     lateinit var viewPassword: View
     lateinit var alertDialog: AlertDialog
-    private var mFirebaseAnalytics: FirebaseAnalytics? = null
+//    private var mFirebaseAnalytics: FirebaseAnalytics? = null
 
     lateinit var mAdView : AdView
 
-    @SuppressLint("MissingPermission")
 
+    @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_index)
@@ -191,7 +191,6 @@ class IndexActivity : AppCompatActivity(),View.OnClickListener, LocationListener
     }
     override fun onResume() {
         cekLokasi()
-
         r = Runnable{
             doJob()
         }
@@ -230,7 +229,7 @@ class IndexActivity : AppCompatActivity(),View.OnClickListener, LocationListener
             }
         }
 
-        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+//        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
         PopupUtil.showProgress(this,"Loading","Update Data Dari Server!!")
         cekFaceID()
@@ -340,7 +339,7 @@ class IndexActivity : AppCompatActivity(),View.OnClickListener, LocationListener
         if(viewPassword.parent!=null){
             (viewPassword.parent as ViewGroup).removeView(viewPassword)
         }
-        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+//        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
         mAdView = viewPassword.adViewAPPINFORMASI
         val adRequest = AdRequest.Builder().build()
@@ -405,6 +404,8 @@ class IndexActivity : AppCompatActivity(),View.OnClickListener, LocationListener
         handler.postDelayed(r,1000)
     }
     fun cekLokasi(){
+        handler.removeCallbacks(r)
+
         val apiEndPoint = ApiClient.getClient(this@IndexActivity)!!.create(ApiEndPoint::class.java)
         val call = apiEndPoint.cekLokasi()
         call?.enqueue(object : Callback<AbpResponse?> {
@@ -587,7 +588,7 @@ class IndexActivity : AppCompatActivity(),View.OnClickListener, LocationListener
         mAdView = viewPassword.adViewAPPINFO
         val adRequest = AdRequest.Builder().build()
         mAdView.loadAd(adRequest)
-        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+//        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
         alertDialog = AlertDialog.Builder(this@IndexActivity)
             .setView(viewPassword).create()
@@ -624,7 +625,7 @@ class IndexActivity : AppCompatActivity(),View.OnClickListener, LocationListener
         mAdView = viewPassword.adViewLMasuk
         val adRequest = AdRequest.Builder().build()
         mAdView.loadAd(adRequest)
-        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+//        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
         alertDialog = AlertDialog.Builder(this@IndexActivity)
             .setView(viewPassword).create()
         alertDialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
@@ -659,7 +660,7 @@ class IndexActivity : AppCompatActivity(),View.OnClickListener, LocationListener
         mAdView = viewPassword.adViewLPulang
         val adRequest = AdRequest.Builder().build()
         mAdView.loadAd(adRequest)
-        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+//        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
         alertDialog = AlertDialog.Builder(this@IndexActivity)
             .setView(viewPassword).create()
         alertDialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))

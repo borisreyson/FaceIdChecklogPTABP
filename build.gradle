@@ -21,6 +21,7 @@ allprojects {
         jcenter()
         maven { url "https://jitpack.io" }
         maven { url 'https://dl.bintray.com/camerakit/camerakit-android-snapshots' }
+
     }
 }
 task clean(type: Delete) {

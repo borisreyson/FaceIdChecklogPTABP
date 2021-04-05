@@ -3,6 +3,7 @@ package com.misit.abpenergy.api
 import com.misit.faceidchecklogptabp.Response.*
 import com.misit.faceidchecklogptabp.Response.Absen.AllAbsenResponse
 import com.misit.faceidchecklogptabp.Response.Absen.DirInfoResponse
+import com.misit.faceidchecklogptabp.Response.MainResponse.FirstLoadResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Call
@@ -59,6 +60,13 @@ interface ApiEndPoint{
                        @Field("masukan") masukan:String?,
                        @Field("_token") csrf_token:String?): Call<MasukanResponse>
 
+
+    @GET("api/android/token/firebase/new")
+    fun getAndroidToken(@Query("nik") nik:String?,
+                        @Query("app") app:String?,
+                        @Query("android_token") android_token:String?)
+            : Call<FirstLoadResponse>?
+
     @GET("api/android/get/list/absen")
     fun getAbsen(@Query("nik") nik:String,
                  @Query("status") status:String,
@@ -79,10 +87,7 @@ interface ApiEndPoint{
                      @Query("page") page:Int?)
             : Call<AllAbsenResponse>?
 
-    @GET("api/android/token/firebase")
-    fun getAndroidToken(@Query("nik") nik:String?,
-                        @Query("app") app:String?)
-            : Call<AndroidTokenResponse>?
+
     @GET("absen/presentasi/pengguna")
     fun getPresentasiPengguna()
             : Call<PresentasiPenggunaResponse>?

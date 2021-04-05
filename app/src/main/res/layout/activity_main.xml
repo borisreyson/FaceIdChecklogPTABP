@@ -24,7 +24,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="4dp"
-        android:text="App Version"
+        android:text="Versi"
         android:textColor="@color/white"
         android:textSize="10sp"
         app:layout_constraintBottom_toTopOf="@+id/tvVersionCode"

@@ -10,73 +10,75 @@ tools:context=".IndexActivity">
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@drawable/toolbar_bg"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-        app:titleTextColor="@color/colorPrimary" >
-        <ImageView
-            android:layout_gravity="center"
-            android:layout_width="45dp"
-            android:layout_height="45dp"
-            android:layout_weight="1"
-            android:src="@drawable/abp_logo"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp"
-            />
-        <ImageView
-            android:id="@+id/btnInfoApp"
-            android:layout_gravity="right"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:padding="5dp"
-            android:src="@drawable/ic_info_outline_black_24dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginRight="5dp"
-            android:layout_marginBottom="5dp"
-            />
-        <ImageView
-            android:id="@+id/btnMasukanList"
-            android:layout_gravity="right"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:padding="5dp"
-            android:src="@drawable/ic_sms_failed_black_24dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginRight="5dp"
-            android:layout_marginBottom="5dp"
-            />
-        <ImageView
-            android:visibility="gone"
-            android:id="@+id/btnFaceTrue"
-            android:layout_gravity="left"
-            android:layout_width="40dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:padding="5dp"
-            android:src="@drawable/face_true"
-            android:layout_marginTop="5dp"
-            android:layout_marginLeft="5dp"
-            android:layout_marginBottom="5dp"
-            />
-        <ImageView
-            android:id="@+id/btnFaceFalse"
-            android:layout_gravity="left"
-            android:layout_width="40dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:padding="5dp"
-            android:src="@drawable/face_false"
-            android:layout_marginTop="5dp"
-            android:layout_marginLeft="5dp"
-            android:layout_marginBottom="5dp"
-            />
-    </androidx.appcompat.widget.Toolbar>
-<androidx.constraintlayout.widget.ConstraintLayout
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@drawable/toolbar_bg"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+            app:titleTextColor="@color/colorPrimary">
+
+            <ImageView
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:layout_weight="1"
+                android:src="@drawable/abp_logo" />
+
+            <ImageView
+                android:id="@+id/btnInfoApp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:layout_marginTop="5dp"
+                android:layout_marginRight="5dp"
+                android:layout_marginBottom="5dp"
+                android:layout_weight="1"
+                android:padding="5dp"
+                android:src="@drawable/ic_info_outline_black_24dp" />
+
+            <ImageView
+                android:id="@+id/btnMasukanList"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:layout_marginTop="5dp"
+                android:layout_marginRight="5dp"
+                android:layout_marginBottom="5dp"
+                android:layout_weight="1"
+                android:padding="5dp"
+                android:src="@drawable/ic_sms_failed_black_24dp" />
+
+            <ImageView
+                android:id="@+id/btnFaceTrue"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:layout_marginLeft="5dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:layout_weight="1"
+                android:padding="5dp"
+                android:src="@drawable/face_true"
+                android:visibility="gone" />
+
+            <ImageView
+                android:id="@+id/btnFaceFalse"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:layout_marginLeft="5dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:layout_weight="1"
+                android:padding="5dp"
+                android:src="@drawable/face_false" />
+        </androidx.appcompat.widget.Toolbar>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
     android:id="@+id/headerTop"
     android:background="@color/white"
     android:layout_width="match_parent"

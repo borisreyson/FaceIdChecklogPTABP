@@ -28,6 +28,13 @@ android {
     dataBinding {
         enabled = true
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
 }
 
 dependencies {
@@ -44,7 +51,7 @@ dependencies {
     implementation 'com.wonderkiln:camerakit:0.13.1'
     implementation 'com.google.firebase:firebase-auth:19.3.0'
     implementation 'com.google.firebase:firebase-core:17.4.4'
-    implementation 'com.google.firebase:firebase-ml-vision:24.0.3'
+//    implementation 'com.google.firebase:firebase-ml-vision:24.0.3'
     implementation 'com.github.d-max:spots-dialog:1.1@aar'
 
     implementation 'com.google.firebase:firebase-ml-vision-face-model:20.0.1'
@@ -85,6 +92,7 @@ dependencies {
     implementation 'com.github.PhilJay:MPAndroidChart:v3.0.3'
     implementation 'com.google.android.gms:play-services-ads:19.3.0'
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
+    implementation 'com.google.android.gms:play-services-location:18.0.0'
 
 
 }

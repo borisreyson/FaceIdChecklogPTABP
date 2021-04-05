@@ -62,7 +62,7 @@ class MasukActivity : AppCompatActivity() {
     lateinit var mouthPos:MutableList<FirebaseVisionPoint>
     private var mLocationManager : LocationManager?=null
     private var mLocation : Location?= null
-    private var mFirebaseAnalytics: FirebaseAnalytics? = null
+//    private var mFirebaseAnalytics: FirebaseAnalytics? = null
 
     lateinit var mAdView : AdView
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -181,7 +181,7 @@ class MasukActivity : AppCompatActivity() {
             }
         }
 
-        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+//        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
         if(camera_view.isFacingBack){
             camera_view.toggleFacing()
 //            btnToggle.text="Camera Belakang"

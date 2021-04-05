@@ -67,7 +67,7 @@ class PulangActivity : AppCompatActivity() {
     lateinit var  rectOverlay:RectOverlay
     lateinit var leftEarPos:FirebaseVisionPoint
     lateinit var rightEarPos:FirebaseVisionPoint
-    private var mFirebaseAnalytics: FirebaseAnalytics? = null
+//    private var mFirebaseAnalytics: FirebaseAnalytics? = null
 
     lateinit var mAdView : AdView
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -194,7 +194,7 @@ class PulangActivity : AppCompatActivity() {
             }
         }
 
-        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+//        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
         if(camera_view.isFacingBack){
             camera_view.toggleFacing()
 //            btnToggle.text="Camera Belakang"

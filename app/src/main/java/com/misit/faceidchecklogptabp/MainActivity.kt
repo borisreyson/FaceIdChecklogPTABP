@@ -34,6 +34,7 @@ import com.misit.abpenergy.api.ApiEndPoint
 import com.misit.faceidchecklogptabp.Response.AbpResponse
 import com.misit.faceidchecklogptabp.Response.AndroidTokenResponse
 import com.misit.faceidchecklogptabp.Response.AppVersionResponse
+import com.misit.faceidchecklogptabp.Response.MainResponse.FirstLoadResponse
 import com.misit.faceidchecklogptabp.Utils.PrefsUtil
 import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.activity_main.*
@@ -43,84 +44,44 @@ import retrofit2.Response
 
 
 class MainActivity : AppCompatActivity(), LocationListener {
+
     private var app_version : String?=""
     lateinit var runnable:Runnable
     lateinit var handler: Handler
     private var android_token : String?=null
     var tipe:String?=null
     lateinit var mAdView : AdView
-    lateinit var  mFirebaseAnalytics: FirebaseAnalytics
+//    lateinit var  mFirebaseAnalytics: FirebaseAnalytics
     var isWifiConn: Boolean = false
     lateinit var url_base:ApiClient
     private var mLocationManager : LocationManager?=null
     private var mLocation : Location?= null
+
     override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
             setContentView(R.layout.activity_main)
 
-        handler = Handler()
-        PrefsUtil.initInstance(this)
-//        val connMgr = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-
-        getGPS()
-//        var activeNetwork = connMgr.getActiveNetworkInfo()
-//        if (activeNetwork != null) {
-//            // connected to the internet
-//            if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
-//                // connected to wifi
-//                isWifiConn = isWifiConn
-//            } else if (activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE) {
-//                // connected to mobile data
-//            }
-//        } else {
-//            // not connected to the internet
-//        }
-
-//        var url_base = ApiClient
-//        if(PrefsUtil.getInstance().getBooleanState(PrefsUtil.IS_LOGGED_IN,false)) {
-//            if(PrefsUtil.getInstance()
-//                    .getStringState(PrefsUtil.NIK,null)=="18060207"){
-//                url_base.loadURL("https://abpjobsite.com")
-//                updateProgress()
-//            }else{
-//                url_base.loadURL("http://10.10.3.13")
-//                if(isWifiConn){
-
-//                }else{
-//                    koneksiInActive()
-//                }
-//            }
-//        }
-//        Log.d(DEBUG_TAG, "Wifi connected: $isWifiConn")
-
-//        updateProgress()
-
-        cekLokasi()
-
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
-            verifyStoragePermissions()
-        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             window.decorView.apply {
                 systemUiVisibility = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION  or View.SYSTEM_UI_FLAG_FULLSCREEN
             }
 
         }
+        handler = Handler()
+        PrefsUtil.initInstance(this)
+        getGPS()
         androidToken()
         versionApp()
-
 
         tipe = intent.getStringExtra(TIPE)
         Glide.with(this).load(R.drawable.abp).into(imageView)
 
         tvVersionCode.text=" V.${app_version}"
-
-
-
+        updateProgress()
     }
 
     override fun onResume() {
-        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this)
+//        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this)
         MobileAds.initialize(this) {}
 
         mAdView = findViewById(R.id.adView)
@@ -150,6 +111,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
         }
         super.onResume()
     }
+
     fun getGPS(){
         mLocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.LOLLIPOP){
@@ -165,8 +127,9 @@ class MainActivity : AppCompatActivity(), LocationListener {
         }
         assert(mLocationManager!=null)
         mLocationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-            10,10f,this)
+            10,5f,this)
     }
+
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -181,25 +144,21 @@ class MainActivity : AppCompatActivity(), LocationListener {
                     ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_COARSE_LOCATION)
                     != PackageManager.PERMISSION_GRANTED)
                 {
-//                    Toasty.info(this@MainActivity,"B",Toasty.LENGTH_LONG).show()
                     return
                 }else
                 {
-//                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),1)
-//                    Toast.makeText(this,"tidak mendapatkan lokasi",Toast.LENGTH_SHORT).show()
+                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),1)
                 }
                 mLocationManager!!.requestLocationUpdates(LocationManager.GPS_PROVIDER,
                     10,10f,this)
-                updateProgress()
-//                PopupUtil.showLoading(this,"","Finding your location")
             }else{
                 ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),1)
-
-//                Toasty.info(this@MainActivity,"C",Toasty.LENGTH_LONG).show()
             }
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
+
+//    verifyStoragePermissions
     private fun verifyStoragePermissions() {
         val permission = ContextCompat.checkSelfPermission(this,
             Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -209,17 +168,30 @@ class MainActivity : AppCompatActivity(), LocationListener {
             Manifest.permission.READ_PHONE_STATE)
 
         if (permission != PackageManager.PERMISSION_GRANTED) {
-            Log.i("Permition Denied", "Permission to record denied")
+            Log.i("FaceId", "READ_EXTERNAL_STORAGE Permission to record denied")
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),11)
+//            finish()
+        }else{
+            updateProgress()
         }
         if (permission1 != PackageManager.PERMISSION_GRANTED) {
-            Log.i("Permition Denied", "Permission to record denied")
+            Log.i("FaceId", "WRITE_EXTERNAL_STORAGE Permission to record denied")
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),12)
+//            finish()
+        }else{
+            updateProgress()
         }
         if (permission2 != PackageManager.PERMISSION_GRANTED) {
-            Log.i("Permition Denied", "Permission to record denied")
+            Log.i("FaceId", "READ_PHONE_STATE Permission to record denied")
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_PHONE_STATE),13)
+//            finish()
+        }else{
+            updateProgress()
         }
     }
+//verifyStoragePermissions
 
-
+//versionApp
     fun versionApp(){
          try {
             val pInfo: PackageInfo = this.getPackageManager().getPackageInfo(packageName, 0)
@@ -229,6 +201,9 @@ class MainActivity : AppCompatActivity(), LocationListener {
             e.printStackTrace()
         }
     }
+//    versionApp
+
+//    checkVersion
     fun checkVersion(){
 
         val apiEndPoint = ApiClient.getClient(this)!!.create(ApiEndPoint::class.java)
@@ -257,78 +232,69 @@ class MainActivity : AppCompatActivity(), LocationListener {
 
         })
     }
+//    checkVersion
+
     fun updateProgress(){
         runnable= Runnable{
             var besar = progressHorizontal.progress
             progressHorizontal.progress = besar + 10
-            if (besar == 40) {
-                cekLokasi()
-            }else if(besar<75){
-                checkVersion()
+            if(besar<40){
+                verifyStoragePermissions()
             }else if(besar<100){
-                updateProgress()
-            } else {
-                if(PrefsUtil.getInstance().getBooleanState(PrefsUtil.IS_LOGGED_IN,false))
-                {
-                    var nik = PrefsUtil.getInstance().getStringState(PrefsUtil.NIK,"")
-
-                    val apiEndPoint = ApiClient.getClient(this)!!.create(ApiEndPoint::class.java)
-                    val call = apiEndPoint.getAndroidToken(nik,"faceId")
-                    call?.enqueue(object : Callback<AndroidTokenResponse?> {
-                        override fun onFailure(call: Call<AndroidTokenResponse?>, t: Throwable) {
-                            PrefsUtil.getInstance().setBooleanState(
-                                PrefsUtil.IS_LOGGED_IN,false)
-                            intent = Intent(this@MainActivity, LoginActivity::class.java)
-                            startActivity(intent)
-                            finish()
-
-                        }
-
-                        override fun onResponse(
-                            call: Call<AndroidTokenResponse?>,
-                            response: Response<AndroidTokenResponse?>
-                        ) {
-                            var androidToken = response.body()
-
-                            if(androidToken==null){
-                                PrefsUtil.getInstance().setBooleanState(
-                                    PrefsUtil.IS_LOGGED_IN,false)
-                                intent = Intent(this@MainActivity, LoginActivity::class.java)
-
-                                startActivity(intent)
-                                finish()
-                            }else{
-//                                Toasty.info(this@MainActivity,androidToken.phoneToken.toString()).show()
-                                if(androidToken.phoneToken==android_token){
-                                var intent = Intent(this@MainActivity, IndexActivity::class.java)
-                                    intent.putExtra(IndexActivity.TIPE,tipe)
-                                    startActivity(intent)
-                                    finish()
-                                }else{
-                                    PrefsUtil.getInstance().setBooleanState(
-                                        PrefsUtil.IS_LOGGED_IN,false)
-                                    intent = Intent(this@MainActivity, LoginActivity::class.java)
-                                    startActivity(intent)
-                                    finish()
-                                }
-
-                            }
-
-                        }
-
-                    })
-                }
-                else
-                {
-                    intent = Intent(this, LoginActivity::class.java)
-                    startActivity(intent)
-                    finish()
-                }
+            updateProgress()
+            } else if(besar==100){
                 handler.removeCallbacks(runnable)
+                loadFirst()
             }
         }
         handler.postDelayed(runnable,100)
     }
+
+    fun loadFirst(){
+        Log.v("FaceId",android_token)
+        if(PrefsUtil.getInstance().getBooleanState(PrefsUtil.IS_LOGGED_IN,false))
+        {
+            var nik = PrefsUtil.getInstance().getStringState(PrefsUtil.NIK,"")
+            val apiEndPoint = ApiClient.getClient(this)!!.create(ApiEndPoint::class.java)
+            val call = apiEndPoint.getAndroidToken(nik,"faceId",android_token)
+            call?.enqueue(object : Callback<FirstLoadResponse?> {
+                override fun onFailure(call: Call<FirstLoadResponse?>, t: Throwable) {
+                    Log.v("FaceId","Error: "+t.toString())
+                    koneksiInActive()
+                }
+                override fun onResponse(
+                    call: Call<FirstLoadResponse?>,
+                    response: Response<FirstLoadResponse?>
+                ) {
+                    var loadResponse = response.body()
+
+                    if(loadResponse!=null) {
+                        Log.v("FaceId","Data"+loadResponse.toString())
+                        if (loadResponse!!.absensi == null) {
+                            loadPage("Login")
+                        } else {
+                            if (loadResponse!!.absensi!!.phoneToken == android_token) {
+                                loadPage("Index")
+                            } else {
+                                loadPage("Index")
+                            }
+
+                        }
+                    }else{
+                        loadPage("Login")
+                    }
+
+                }
+
+            })
+        }
+
+        else
+        {
+            loadPage("Login")
+        }
+    }
+//    androidToken
     fun androidToken(){
         FirebaseMessaging.getInstance().isAutoInitEnabled = true
         FirebaseInstanceId.getInstance().instanceId
@@ -342,6 +308,9 @@ class MainActivity : AppCompatActivity(), LocationListener {
                 android_token = task.result?.token
             })
     }
+//    androidToken
+
+//    updateAplication
     fun updateAplication(uriString:String){
         AlertDialog.Builder(this)
             .setTitle("Pambaharuan , Aplikasi Versi "+ LAST_VERSION+" Telah Tersedia.")
@@ -359,6 +328,9 @@ class MainActivity : AppCompatActivity(), LocationListener {
             .setOnDismissListener({_ -> finish()  })
             .show()
     }
+//    updateAplication
+
+//    koneksiInActive
     fun koneksiInActive(){
         AlertDialog.Builder(this)
             .setTitle("Maaf , Anda Harus Menggunakan Jaringan Wifi PT. ABP!")
@@ -370,27 +342,31 @@ class MainActivity : AppCompatActivity(), LocationListener {
             .setOnDismissListener({_ -> finish()  })
             .show()
     }
-    fun cekLokasi(){
-        val apiEndPoint = ApiClient.getClient(this@MainActivity)!!.create(ApiEndPoint::class.java)
-        val call = apiEndPoint.cekLokasi()
-        call?.enqueue(object : Callback<AbpResponse?> {
-            override fun onFailure(call: Call<AbpResponse?>, t: Throwable) {
-                koneksiInActive()
-            }
+//    koneksiInActive
 
-            override fun onResponse(call: Call<AbpResponse?>, response: Response<AbpResponse?>) {
-                var koneksiCek = response.body()
-                if(koneksiCek!=null){
-                    versionApp()
-                    updateProgress()
-                }else{
-                    koneksiInActive()
-                }
-            }
 
-        })
+//    loadPage
+    fun loadPage(pageName:String){
+        var intent:Intent?=null
+        if(pageName=="Login"){
+            PrefsUtil.getInstance().setBooleanState(
+                PrefsUtil.IS_LOGGED_IN, false
+            )
+            intent = Intent(this@MainActivity, LoginActivity::class.java)
+            startActivity(intent)
+            finish()
+        }else if(pageName=="Index"){
+            intent = Intent(this@MainActivity, HomeActivity::class.java)
+            intent.putExtra(IndexActivity.TIPE, tipe)
+            startActivity(intent)
+            finish()
+        }else{
+
+        }
+
 
     }
+//    loadPage
 
     companion object{
         var TIPE = "TIPE"

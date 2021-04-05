@@ -1,6 +1,7 @@
 package com.misit.abpenergy.api
 
 import android.content.Context
+import com.franmontiel.persistentcookiejar.BuildConfig
 import com.franmontiel.persistentcookiejar.ClearableCookieJar
 import com.franmontiel.persistentcookiejar.PersistentCookieJar
 import com.franmontiel.persistentcookiejar.cache.SetCookieCache
@@ -32,9 +33,15 @@ object ApiClient{
         val interceptor = HttpLoggingInterceptor()
         interceptor.level = HttpLoggingInterceptor.Level.BODY
         val cookieJar: ClearableCookieJar = PersistentCookieJar(SetCookieCache(),SharedPrefsCookiePersistor(context))
-        return OkHttpClient.Builder()
-            .addInterceptor(interceptor)
+        var okhttpClient = OkHttpClient.Builder()
+        if(BuildConfig.DEBUG)
+        {
+            okhttpClient
+                .addInterceptor(interceptor)
+        }
+        return okhttpClient
             .cookieJar(cookieJar)
+            .retryOnConnectionFailure(false)
             .build()
     }
 }
