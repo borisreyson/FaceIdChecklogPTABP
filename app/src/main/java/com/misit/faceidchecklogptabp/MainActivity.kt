@@ -356,7 +356,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
             startActivity(intent)
             finish()
         }else if(pageName=="Index"){
-            intent = Intent(this@MainActivity, HomeActivity::class.java)
+            intent = Intent(this@MainActivity, IndexActivity::class.java)
             intent.putExtra(IndexActivity.TIPE, tipe)
             startActivity(intent)
             finish()
