@@ -16,7 +16,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.provider.Settings
-import android.telecom.TelecomManager
 import android.telephony.TelephonyManager
 import android.util.Log
 import android.view.LayoutInflater
@@ -33,18 +32,16 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import com.google.android.material.textfield.TextInputEditText
-import com.google.firebase.analytics.FirebaseAnalytics
 import com.misit.abpenergy.api.ApiClient
 import com.misit.abpenergy.api.ApiEndPoint
 import com.misit.faceidchecklogptabp.Absen.*
+import com.misit.faceidchecklogptabp.Absen.v1.*
 import com.misit.faceidchecklogptabp.Chart.PersentaseActivity
 import com.misit.faceidchecklogptabp.Helper.KirimMasukanActivity
 import com.misit.faceidchecklogptabp.Masukan.MasukanActivity
 import com.misit.faceidchecklogptabp.Response.*
 import com.misit.faceidchecklogptabp.Response.Absen.DirInfoResponse
-import com.misit.faceidchecklogptabp.Utils.DateUtils
 import com.misit.faceidchecklogptabp.Utils.PopupUtil
-import com.misit.faceidchecklogptabp.Utils.PopupUtil.updateProgress
 import com.misit.faceidchecklogptabp.Utils.PrefsUtil
 import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.activity_index.*
@@ -53,7 +50,6 @@ import kotlinx.android.synthetic.main.info_app.view.*
 import kotlinx.android.synthetic.main.informasi.view.*
 import kotlinx.android.synthetic.main.lupa_masuk.view.*
 import kotlinx.android.synthetic.main.lupa_pulang.view.*
-import org.joda.time.LocalTime
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -83,7 +79,6 @@ class IndexActivity : AppCompatActivity(),View.OnClickListener, LocationListener
     lateinit var mAdView : AdView
 
 
-    @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_index)
@@ -99,7 +94,7 @@ class IndexActivity : AppCompatActivity(),View.OnClickListener, LocationListener
         }else{
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_PHONE_STATE),123)
         }
-        getGPS()
+//        getGPS()
         PrefsUtil.initInstance(this)
         if(PrefsUtil.getInstance().getBooleanState(PrefsUtil.IS_LOGGED_IN,true)){
             NAMA = PrefsUtil.getInstance().getStringState(PrefsUtil.NAMA_LENGKAP,"")
@@ -175,7 +170,7 @@ class IndexActivity : AppCompatActivity(),View.OnClickListener, LocationListener
                         btnFaceFalse.visibility=View.VISIBLE
                         btnFaceTrue.visibility=View.GONE
                         PopupUtil.dismissDialog()
-                        val intent = Intent(this@IndexActivity,DaftarWajahActivity::class.java)
+                        val intent = Intent(this@IndexActivity, DaftarWajahActivity::class.java)
                         startActivity(intent)
                     }
                 }
@@ -191,9 +186,7 @@ class IndexActivity : AppCompatActivity(),View.OnClickListener, LocationListener
     }
     override fun onResume() {
         cekLokasi()
-        r = Runnable{
-            doJob()
-        }
+
         MobileAds.initialize(this) {}
 
         mAdView = findViewById(R.id.adViewIndex)
@@ -405,12 +398,17 @@ class IndexActivity : AppCompatActivity(),View.OnClickListener, LocationListener
     }
     fun cekLokasi(){
         handler.removeCallbacks(r)
-
+        r = Runnable{
+            cekLokasi()
+        }
         val apiEndPoint = ApiClient.getClient(this@IndexActivity)!!.create(ApiEndPoint::class.java)
         val call = apiEndPoint.cekLokasi()
         call?.enqueue(object : Callback<AbpResponse?> {
             override fun onFailure(call: Call<AbpResponse?>, t: Throwable) {
-                koneksiInActive()
+//                koneksiInActive()
+
+                cekLokasi()
+                Log.d("ErrorLokasi",t.toString())
             }
 
             override fun onResponse(call: Call<AbpResponse?>, response: Response<AbpResponse?>) {
@@ -554,14 +552,14 @@ class IndexActivity : AppCompatActivity(),View.OnClickListener, LocationListener
 
         }
         else if(v!!.id==R.id.btnLupaPulang){
-//            val intent= Intent(this, LupaPulangActivity::class.java)
-//            intent.putExtra(LupaPulangActivity.NIK, NIK)
-//            startActivity(intent)
+            val intent= Intent(this, LupaPulangActivity::class.java)
+            intent.putExtra(LupaPulangActivity.NIK, NIK)
+            startActivity(intent)
             showDialogLupaPulang()
         }else if(v!!.id==R.id.btnMasukan){
             kirimMasukan()
         }else if(v!!.id==R.id.btnDaftarWajah){
-            val intent = Intent(this@IndexActivity,DaftarWajahActivity::class.java)
+            val intent = Intent(this@IndexActivity, DaftarWajahActivity::class.java)
             startActivity(intent)
         }else if(v!!.id==R.id.btnMasukanList){
             val intent = Intent(this@IndexActivity,MasukanActivity::class.java)

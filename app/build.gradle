@@ -14,8 +14,8 @@ android {
         applicationId "com.misit.faceidchecklogptabp"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 12
-        versionName "2.2"
+        versionCode 14
+        versionName "2.4"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -43,22 +43,29 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.core:core-ktx:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
-    implementation 'com.google.firebase:firebase-crashlytics:17.1.1'
+    implementation 'androidx.viewpager2:viewpager2:1.0.0'
+//    implementation 'com.google.firebase:firebase-ml-vision:24.1.0'
+
+//    implementation 'com.google.firebase:firebase-crashlytics:17.1.1'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-    implementation 'com.google.firebase:firebase-analytics:17.4.4'
+//    implementation 'com.google.firebase:firebase-analytics:17.4.4'
     implementation 'com.wonderkiln:camerakit:0.13.1'
     implementation 'com.google.firebase:firebase-auth:19.3.0'
     implementation 'com.google.firebase:firebase-core:17.4.4'
 //    implementation 'com.google.firebase:firebase-ml-vision:24.0.3'
+    implementation 'com.google.mlkit:face-detection:16.1.2'
+    implementation 'com.google.android.gms:play-services-mlkit-face-detection:16.2.0'
+
+
     implementation 'com.github.d-max:spots-dialog:1.1@aar'
 
-    implementation 'com.google.firebase:firebase-ml-vision-face-model:20.0.1'
+//    implementation 'com.google.firebase:firebase-ml-vision-face-model:20.0.1'
     // Custom model
 //    implementation 'com.google.firebase:firebase-ml-model-interpreter:22.0.3'
     // AutoML model
-    implementation 'com.google.firebase:firebase-ml-vision-automl:18.0.5'
+//    implementation 'com.google.firebase:firebase-ml-vision-automl:18.0.5'
 
 
     implementation 'com.squareup.okhttp3:logging-interceptor:3.9.0'
@@ -103,8 +110,10 @@ dependencies {
     implementation 'com.google.zxing:core:3.2.1'
     implementation 'com.journeyapps:zxing-android-embedded:3.2.0@aar'
     implementation 'de.hdodenhof:circleimageview:3.1.0'
-    implementation 'com.google.android.gms:play-services-vision:20.1.3'
-    implementation platform('com.google.firebase:firebase-bom:27.1.0')
+    implementation 'com.google.android.gms:play-services-vision:20.1.1'
+    implementation 'com.google.android.gms:play-services-vision-common:19.1.1'
+    implementation platform('com.google.firebase:firebase-bom:28.3.0')
+
     implementation 'com.google.firebase:firebase-analytics-ktx'
 
     ext {
@@ -115,12 +124,12 @@ dependencies {
     implementation "com.android.support:design:$support_version"
 
 // Google Drive
-    implementation "com.google.android.gms:play-services-auth:$play_services_version"
-    implementation "com.google.android.gms:play-services-drive:$play_services_version"
+//    implementation "com.google.android.gms:play-services-auth:$play_services_version"
+//    implementation "com.google.android.gms:play-services-drive:$play_services_version"
     implementation 'com.squareup.okio:okio:1.14.0'
-    implementation 'com.google.api-client:google-api-client:1.23.0'
-    implementation 'com.google.oauth-client:google-oauth-client-jetty:1.23.0'
-    implementation 'com.google.apis:google-api-services-drive:v3-rev110-1.23.0'
+//    implementation 'com.google.api-client:google-api-client:1.23.0'
+//    implementation 'com.google.oauth-client:google-oauth-client-jetty:1.23.0'
+//    implementation 'com.google.apis:google-api-services-drive:v3-rev110-1.23.0'
     implementation 'me.dm7.barcodescanner:zxing:1.9'
     implementation "com.theartofdev.edmodo:android-image-cropper:2.8.+"
     implementation 'com.squareup.picasso:picasso:2.71828'

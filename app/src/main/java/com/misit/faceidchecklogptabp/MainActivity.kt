@@ -27,7 +27,7 @@ import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.analytics.FirebaseAnalytics
-import com.google.firebase.iid.FirebaseInstanceId
+//import com.google.firebase.iid.FirebaseInstanceId
 import com.google.firebase.messaging.FirebaseMessaging
 import com.misit.abpenergy.api.ApiClient
 import com.misit.abpenergy.api.ApiEndPoint
@@ -69,7 +69,8 @@ class MainActivity : AppCompatActivity(), LocationListener {
         }
         handler = Handler()
         PrefsUtil.initInstance(this)
-        getGPS()
+//        getGPS()
+//        updateProgress()
         androidToken()
         versionApp()
 
@@ -82,53 +83,53 @@ class MainActivity : AppCompatActivity(), LocationListener {
 
     override fun onResume() {
 //        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this)
-        MobileAds.initialize(this) {}
-
-        mAdView = findViewById(R.id.adView)
-        val adRequest = AdRequest.Builder().build()
-        mAdView.loadAd(adRequest)
-
-        mAdView.adListener = object: AdListener() {
-            override fun onAdLoaded() {
-//                    updateProgress()
-            }
-
-            override fun onAdFailedToLoad(errorCode : Int) {
-//                    updateProgress()
-            }
-
-            override fun onAdOpened() {
-            }
-
-            override fun onAdClicked() {
-            }
-
-            override fun onAdLeftApplication() {
-            }
-
-            override fun onAdClosed() {
-            }
-        }
+//        MobileAds.initialize(this) {}
+//
+//        mAdView = findViewById(R.id.adView)
+//        val adRequest = AdRequest.Builder().build()
+//        mAdView.loadAd(adRequest)
+//
+//        mAdView.adListener = object: AdListener() {
+//            override fun onAdLoaded() {
+////                    updateProgress()
+//            }
+//
+//            override fun onAdFailedToLoad(errorCode : Int) {
+////                    updateProgress()
+//            }
+//
+//            override fun onAdOpened() {
+//            }
+//
+//            override fun onAdClicked() {
+//            }
+//
+//            override fun onAdLeftApplication() {
+//            }
+//
+//            override fun onAdClosed() {
+//            }
+//        }
         super.onResume()
     }
 
-    fun getGPS(){
-        mLocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.LOLLIPOP){
-            if(ActivityCompat.checkSelfPermission(this,
-                    Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED ){
-                PackageManager.PERMISSION_GRANTED
-                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),1)
-                return
-            }else{
-                updateProgress()
-            }
-        }
-        assert(mLocationManager!=null)
-        mLocationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-            10,5f,this)
-    }
+//    fun getGPS(){
+//        mLocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+//        if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.LOLLIPOP){
+//            if(ActivityCompat.checkSelfPermission(this,
+//                    Manifest.permission.ACCESS_FINE_LOCATION)
+//                != PackageManager.PERMISSION_GRANTED ){
+//                PackageManager.PERMISSION_GRANTED
+//                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),1)
+//                return
+//            }else{
+//                updateProgress()
+//            }
+//        }
+//        assert(mLocationManager!=null)
+//        mLocationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+//            10,5f,this)
+//    }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -149,8 +150,8 @@ class MainActivity : AppCompatActivity(), LocationListener {
                 {
                     ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),1)
                 }
-                mLocationManager!!.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                    10,10f,this)
+//                mLocationManager!!.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+//                    10,10f,this)
             }else{
                 ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),1)
             }
@@ -297,7 +298,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
 //    androidToken
     fun androidToken(){
         FirebaseMessaging.getInstance().isAutoInitEnabled = true
-        FirebaseInstanceId.getInstance().instanceId
+    FirebaseMessaging.getInstance().token
             .addOnCompleteListener(OnCompleteListener { task ->
                 if (!task.isSuccessful) {
                     Toast.makeText(this@MainActivity,"Error : $task.exception", Toast.LENGTH_SHORT).show()
@@ -305,7 +306,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
                     return@OnCompleteListener
                 }
                 // Get new Instance ID token
-                android_token = task.result?.token
+                android_token = task.result
             })
     }
 //    androidToken

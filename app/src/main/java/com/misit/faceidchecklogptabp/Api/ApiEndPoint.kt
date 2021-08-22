@@ -13,6 +13,7 @@ interface ApiEndPoint{
 
     @GET("refresh-csrf")
     fun getToken(@Query("csrf_token") tokenId:String): Call<CsrfTokenResponse>?
+
     @Multipart
     @POST("upload_image.php")
     fun uploadImage(@Part fileToUpload:MultipartBody.Part?,
@@ -24,6 +25,7 @@ interface ApiEndPoint{
                     @Part("lupa_absen") lupa_absen:RequestBody,
                     @Part("lat") lat:RequestBody,
                     @Part("lng") lng:RequestBody): Call<ImageResponse>
+
     @Multipart
     @POST("registrasi_wajah.php")
     fun daftarkanWajah(@Part fileToUpload:MultipartBody.Part?,

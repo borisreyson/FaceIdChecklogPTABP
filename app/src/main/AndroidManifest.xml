@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.misit.faceidchecklogptabp">
 
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+<!--    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />-->
+<!--    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />-->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_PRIVILEGED_PHONE_STATE"
+        tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -18,7 +21,7 @@
  Required only when requesting background location access on
           Android 10 (API level 29) and higher.
     -->
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+<!--    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />-->
 
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
@@ -31,13 +34,18 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".HomeActivity"
+        <activity android:name=".Absen.v2.MasukActivity"></activity>
+        <activity
+            android:name=".HomeActivity"
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
-            android:theme="@style/noActionBar"></activity>
-        <activity android:name=".Absen.AbsenMapActivity" />
+            android:theme="@style/noActionBar" />
+        <activity android:name=".Absen.v1.AbsenMapActivity" />
         <activity android:name=".Masukan.MasukanDetailActivity" />
 
+        <meta-data
+            android:name="com.google.mlkit.vision.DEPENDENCIES"
+            android:value="face" />
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="@string/APP_ADMOB_ID" />
@@ -47,18 +55,18 @@
             android:launchMode="singleTask"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".Absen.DaftarWajahActivity"
+            android:name=".Absen.v1.DaftarWajahActivity"
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
             android:theme="@style/noActionBar" />
         <activity android:name=".Helper.KirimMasukanActivity" />
         <activity
-            android:name=".Absen.LupaPulangActivity"
+            android:name=".Absen.v1.LupaPulangActivity"
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
             android:theme="@style/noActionBar" />
         <activity
-            android:name=".Absen.LupaMasukActivity"
+            android:name=".Absen.v1.LupaMasukActivity"
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
             android:theme="@style/noActionBar" />
@@ -108,7 +116,7 @@
             android:screenOrientation="portrait"
             android:theme="@style/noActionBar" />
         <activity
-            android:name=".Absen.PulangActivity"
+            android:name=".Absen.v1.PulangActivity"
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
             android:theme="@style/noActionBar">
@@ -117,7 +125,7 @@
                 android:value="face" />
         </activity>
         <activity
-            android:name=".Absen.MasukActivity"
+            android:name=".Absen.v1.MasukActivity"
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
             android:theme="@style/noActionBar">

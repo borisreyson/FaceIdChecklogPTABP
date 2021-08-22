@@ -24,7 +24,7 @@ import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.analytics.FirebaseAnalytics
-import com.google.firebase.iid.FirebaseInstanceId
+//import com.google.firebase.iid.FirebaseInstanceId
 import com.google.firebase.messaging.FirebaseMessaging
 import com.misit.abpenergy.api.ApiClient
 import com.misit.abpenergy.api.ApiEndPoint
@@ -155,7 +155,7 @@ class LoginActivity : AppCompatActivity(),View.OnClickListener {
     }
     fun androidToken(){
         FirebaseMessaging.getInstance().isAutoInitEnabled = true
-        FirebaseInstanceId.getInstance().instanceId
+        FirebaseMessaging.getInstance().token
             .addOnCompleteListener(OnCompleteListener { task ->
                 if (!task.isSuccessful) {
                     Toast.makeText(this@LoginActivity,"Error : $task.exception", Toast.LENGTH_SHORT).show()
@@ -163,7 +163,7 @@ class LoginActivity : AppCompatActivity(),View.OnClickListener {
                     return@OnCompleteListener
                 }
                 // Get new Instance ID token
-                android_token = task.result?.token
+                android_token = task.result
             })
     }
     private fun getToken() {
@@ -228,7 +228,7 @@ class LoginActivity : AppCompatActivity(),View.OnClickListener {
                                 .setStringState(PrefsUtil.SHOW_ABSEN,
                                     usrResponse.dataLogin?.show_absen)
                             Toasty.success(this@LoginActivity,"Login Success ",Toasty.LENGTH_LONG).show()
-                            val intents = Intent(this@LoginActivity,HomeActivity::class.java)
+                            val intents = Intent(this@LoginActivity,IndexActivity::class.java)
                             finish()
                             startActivity(intents)
                             PopupUtil.dismissDialog()

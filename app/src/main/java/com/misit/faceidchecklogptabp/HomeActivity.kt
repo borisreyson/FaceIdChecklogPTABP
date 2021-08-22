@@ -20,17 +20,13 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.google.android.gms.ads.AdListener
-import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.tasks.OnCompleteListener
-import com.google.firebase.iid.FirebaseInstanceId
 import com.google.firebase.messaging.FirebaseMessaging
 import com.misit.abpenergy.api.ApiClient
 import com.misit.abpenergy.api.ApiEndPoint
-import com.misit.faceidchecklogptabp.Absen.DaftarWajahActivity
-import com.misit.faceidchecklogptabp.Response.AbpResponse
+import com.misit.faceidchecklogptabp.Absen.v1.DaftarWajahActivity
 import com.misit.faceidchecklogptabp.Response.Absen.DirInfoResponse
 import com.misit.faceidchecklogptabp.Response.LastAbsenResponse
 import com.misit.faceidchecklogptabp.Response.MainResponse.FirstLoadResponse
@@ -133,7 +129,7 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener, LocationListener 
     //    androidToken
     fun androidToken(){
         FirebaseMessaging.getInstance().isAutoInitEnabled = true
-        FirebaseInstanceId.getInstance().instanceId
+        FirebaseMessaging.getInstance().token
             .addOnCompleteListener(OnCompleteListener { task ->
                 if (!task.isSuccessful) {
                     Toast.makeText(this@HomeActivity,"Error : $task.exception", Toast.LENGTH_SHORT).show()
@@ -141,16 +137,14 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener, LocationListener 
                     return@OnCompleteListener
                 }
                 // Get new Instance ID token
-                android_token = task.result?.token
+                android_token = task.result
             })
     }
     //    androidToken
     override fun onResume() {
         cekLokasi()
 
-        r = Runnable{
-            doJob()
-        }
+
         cekFaceID()
         super.onResume()
     }
@@ -216,11 +210,16 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener, LocationListener 
             handler.postDelayed(r,1000)
         }
     fun cekLokasi(){
+        r = Runnable{
+            cekLokasi()
+        }
         val apiEndPoint = ApiClient.getClient(this@HomeActivity)!!.create(ApiEndPoint::class.java)
         val call = apiEndPoint.getAndroidToken(NIK,"faceId",android_token)
         call?.enqueue(object : Callback<FirstLoadResponse?> {
             override fun onFailure(call: Call<FirstLoadResponse?>, t: Throwable) {
-                koneksiInActive()
+//                koneksiInActive()
+                cekLokasi()
+                Log.d("ErrorLokasi",t.toString())
             }
 
             override fun onResponse(call: Call<FirstLoadResponse?>, response: Response<FirstLoadResponse?>) {

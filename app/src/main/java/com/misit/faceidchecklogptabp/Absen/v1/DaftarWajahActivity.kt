@@ -1,9 +1,10 @@
-package com.misit.faceidchecklogptabp.Absen
+package com.misit.faceidchecklogptabp.Absen.v1
 
 import android.app.AlertDialog
 import android.content.Context
 import android.content.ContextWrapper
 import android.graphics.Bitmap
+import android.graphics.PointF
 import android.location.Location
 import android.location.LocationManager
 import android.net.Uri
@@ -11,17 +12,11 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
-import com.google.firebase.ml.vision.FirebaseVision
-import com.google.firebase.ml.vision.common.FirebaseVisionImage
-import com.google.firebase.ml.vision.common.FirebaseVisionPoint
-import com.google.firebase.ml.vision.face.FirebaseVisionFace
-import com.google.firebase.ml.vision.face.FirebaseVisionFaceContour
-import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetectorOptions
-import com.google.firebase.ml.vision.face.FirebaseVisionFaceLandmark
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.face.*
 import com.misit.abpenergy.api.ApiClient
 import com.misit.abpenergy.api.ApiEndPoint
 import com.misit.faceidchecklogptabp.Helper.RectOverlay
-import com.misit.faceidchecklogptabp.IndexActivity
 import com.misit.faceidchecklogptabp.R
 import com.misit.faceidchecklogptabp.Response.ImageResponse
 import com.misit.faceidchecklogptabp.Utils.PrefsUtil
@@ -49,7 +44,7 @@ class DaftarWajahActivity : AppCompatActivity() {
     private var bitmap1: Bitmap?=null
     private var niknya:String?=null
     lateinit var  rectOverlay: RectOverlay
-    lateinit var mouthPos:MutableList<FirebaseVisionPoint>
+    lateinit var mouthPos:MutableList<PointF>
     private var mLocationManager : LocationManager?=null
     private var mLocation : Location?= null
     private var minScan = 1
@@ -113,7 +108,7 @@ class DaftarWajahActivity : AppCompatActivity() {
                 bitmap1 = Bitmap.createScaledBitmap(bitmap!!,240,240,false)
 
                 camera_view.stop()
-                runFaceDetector(bitmap1)
+                runFaceDetectorNew(bitmap1)
             }
 
             override fun onError(p0: CameraKitError?) {
@@ -227,51 +222,48 @@ class DaftarWajahActivity : AppCompatActivity() {
         //API
         return uri
     }
-    fun runFaceDetector(bitmap: Bitmap?){
-        val image = FirebaseVisionImage.fromBitmap(bitmap!!)
-
-        val options  = FirebaseVisionFaceDetectorOptions.Builder()
-            .setPerformanceMode(
-                FirebaseVisionFaceDetectorOptions.ACCURATE)
-            .setLandmarkMode(FirebaseVisionFaceDetectorOptions.ALL_LANDMARKS)
-            .setClassificationMode(
-                FirebaseVisionFaceDetectorOptions.ALL_CLASSIFICATIONS)
-            .setContourMode(FirebaseVisionFaceDetectorOptions.ALL_CONTOURS)
-            .enableTracking()
+    private fun runFaceDetectorNew(bitmap: Bitmap?) {
+        val image = InputImage.fromBitmap(bitmap, 0)
+        val realTimeOpts = FaceDetectorOptions.Builder()
+            .setContourMode(FaceDetectorOptions.CONTOUR_MODE_ALL)
             .build()
-        val detector = FirebaseVision.getInstance().getVisionFaceDetector(options)
+        val detector = FaceDetection.getClient(realTimeOpts)
 
-        detector.detectInImage(image)
-            .addOnSuccessListener {
-                    result -> progressResult(result)
-            }
-            .addOnFailureListener{
-                    e -> Toast.makeText(this@DaftarWajahActivity,e.message, Toast.LENGTH_SHORT).show()
-            }
+        val result = detector.process(image!!)
+            .addOnSuccessListener { result ->
+                // Task completed successfully
+                // ...
+                progressResult(result)
 
+            }
+            .addOnFailureListener { e ->
+                // Task failed with an exception
+                // ...
+                Toast.makeText(this@DaftarWajahActivity,e.message, Toast.LENGTH_SHORT).show()
+            }
     }
-    fun progressResult(result:List<FirebaseVisionFace>){
+    fun progressResult(result:List<Face>){
         var count=0
         var id=0
         for (face in result){
             val bounds = face.boundingBox
 
-            val leftEar = face.getLandmark(FirebaseVisionFaceLandmark.LEFT_EAR)
+            val leftEar = face.getLandmark(FaceLandmark.LEFT_EAR)
             leftEar?.let {
                 //val leftEarPos = leftEar.position
             }
 
-            if (face.smilingProbability != FirebaseVisionFace.UNCOMPUTED_PROBABILITY) {
+            if (face.smilingProbability != null) {
             }
-            if (face.rightEyeOpenProbability != FirebaseVisionFace.UNCOMPUTED_PROBABILITY) {
+            if (face.rightEyeOpenProbability != null) {
             }
-            val upperLipBottomContour = face.getContour(FirebaseVisionFaceContour.UPPER_LIP_BOTTOM).points
+            val upperLipBottomContour = face.getContour(FaceContour.UPPER_LIP_BOTTOM).points
 
             upperLipBottomContour.let {
                 mouthPos.addAll(it)
             }
 
-            if (face.trackingId!= FirebaseVisionFace.INVALID_ID) {
+            if (face.trackingId!= null) {
                 id=face.trackingId
             }
 

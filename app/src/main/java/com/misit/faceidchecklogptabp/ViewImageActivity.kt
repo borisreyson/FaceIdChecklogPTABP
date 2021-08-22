@@ -2,26 +2,18 @@ package com.misit.faceidchecklogptabp
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.View
-import android.view.WindowManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import com.google.firebase.analytics.FirebaseAnalytics
-import com.misit.faceidchecklogptabp.Absen.AbsenMapActivity
+import com.misit.faceidchecklogptabp.Absen.v1.AbsenMapActivity
 import com.misit.faceidchecklogptabp.Utils.DateUtils
-import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.activity_view_image.*
-import org.joda.time.LocalDate
-import org.joda.time.format.DateTimeFormat
-import org.joda.time.format.DateTimeFormatter
 
 class ViewImageActivity : AppCompatActivity(),View.OnClickListener {
 

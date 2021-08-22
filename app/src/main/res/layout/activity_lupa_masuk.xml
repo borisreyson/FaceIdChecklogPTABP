@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Absen.LupaMasukActivity">
+    tools:context=".Absen.v1.LupaMasukActivity">
     <RelativeLayout
         android:id="@+id/R_Bottom"
         android:layout_width="match_parent"

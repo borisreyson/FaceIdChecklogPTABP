@@ -1,8 +1,7 @@
-package com.misit.faceidchecklogptabp.Absen
+package com.misit.faceidchecklogptabp.Absen.v1
 
 import android.Manifest
 import android.content.pm.PackageManager
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.FragmentActivity
@@ -13,9 +12,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.misit.faceidchecklogptabp.R
-import es.dmoral.toasty.Toasty
 
 class AbsenMapActivity : FragmentActivity(), OnMapReadyCallback {
 
