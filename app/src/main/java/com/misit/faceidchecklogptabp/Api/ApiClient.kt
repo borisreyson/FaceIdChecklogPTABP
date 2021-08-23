@@ -7,9 +7,11 @@ import com.franmontiel.persistentcookiejar.PersistentCookieJar
 import com.franmontiel.persistentcookiejar.cache.SetCookieCache
 import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor
 import okhttp3.OkHttpClient
+import okhttp3.Protocol
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.*
 
 object ApiClient{
     private var BASE_URL= "http://10.10.3.13"
@@ -34,14 +36,14 @@ object ApiClient{
         interceptor.level = HttpLoggingInterceptor.Level.BODY
         val cookieJar: ClearableCookieJar = PersistentCookieJar(SetCookieCache(),SharedPrefsCookiePersistor(context))
         var okhttpClient = OkHttpClient.Builder()
-        if(BuildConfig.DEBUG)
-        {
+//        if(BuildConfig.DEBUG)
+//        {
             okhttpClient
                 .addInterceptor(interceptor)
-        }
+//        }
         return okhttpClient
             .cookieJar(cookieJar)
-            .retryOnConnectionFailure(false)
+            .retryOnConnectionFailure(true)
             .build()
     }
 }
