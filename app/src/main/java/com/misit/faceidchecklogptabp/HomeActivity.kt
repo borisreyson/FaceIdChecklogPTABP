@@ -21,6 +21,9 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.tasks.OnCompleteListener
@@ -28,17 +31,24 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.misit.abpenergy.api.ApiClient
 import com.misit.abpenergy.api.ApiEndPoint
 import com.misit.faceidchecklogptabp.Absen.v1.DaftarWajahActivity
+import com.misit.faceidchecklogptabp.Absen.v1.MasukActivity
+import com.misit.faceidchecklogptabp.Absen.v1.PulangActivity
+import com.misit.faceidchecklogptabp.Adapter.Last3DaysAdapter
 import com.misit.faceidchecklogptabp.Response.Absen.DirInfoResponse
 import com.misit.faceidchecklogptabp.Response.AbsenLastResponse
-import com.misit.faceidchecklogptabp.Response.LastAbsenResponse
+import com.misit.faceidchecklogptabp.Response.AbsenTigaHariItem
 import com.misit.faceidchecklogptabp.Response.MainResponse.FirstLoadResponse
 import com.misit.faceidchecklogptabp.Utils.PopupUtil
 import com.misit.faceidchecklogptabp.Utils.PrefsUtil
 import kotlinx.android.synthetic.main.activity_home.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.util.*
+import kotlin.collections.ArrayList
 
 class HomeActivity : AppCompatActivity(),View.OnClickListener, LocationListener {
     lateinit var handler : Handler
@@ -55,7 +65,9 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener, LocationListener 
     lateinit var viewPassword: View
     lateinit var alertDialog: AlertDialog
     private var android_token : String?=null
-
+    private var adapter: Last3DaysAdapter? = null
+    private var absenList: MutableList<AbsenTigaHariItem>? = null
+    lateinit var rvLast3Day :RecyclerView
     lateinit var mAdView : AdView
     private val updateClock = object :Runnable{
         override fun run() {
@@ -99,11 +111,41 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener, LocationListener 
 //        r = Runnable{
 //            doJob()
 //        }
+        absenList = ArrayList()
+        adapter = Last3DaysAdapter(this@HomeActivity,absenList!!,NIK,NAMA)
+        rvLast3Day = findViewById(R.id.rvLast3Day)
+        val linearLayoutManager = LinearLayoutManager(this@HomeActivity)
+        rvLast3Day.layoutManager = linearLayoutManager
+        rvLast3Day.adapter= adapter
+        btnNewMasuk.setOnClickListener(this)
+        btnNewPulang.setOnClickListener(this)
+        btnFloatHistory.setOnClickListener(this)
     }
 
     override fun onClick(v: View?) {
-    }
+        if(v?.id==R.id.btnNewMasuk){
+            val intent= Intent(this, MasukActivity::class.java)
+            intent.putExtra(MasukActivity.NIK, IndexActivity.NIK)
+            startActivity(intent)
+        }
+        if(v?.id==R.id.btnNewPulang){
+            val intent= Intent(this, PulangActivity::class.java)
+            intent.putExtra(PulangActivity.NIK, IndexActivity.NIK)
+            startActivity(intent)
+        }
+        if(v?.id==R.id.btnFloatHistory){
+            val intent= Intent(this, LihatAbsenActivity::class.java)
+            intent.putExtra(LihatAbsenActivity.NIK, NIK)
+            startActivity(intent)
+        }
 
+    }
+    fun listAbsen(){
+        val intent= Intent(this, ListAbsenActivity::class.java)
+        intent.putExtra(ListAbsenActivity.NIK, NIK)
+
+        startActivity(intent)
+    }
     override fun onLocationChanged(location: Location?) {
     }
 
@@ -132,6 +174,7 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener, LocationListener 
     }
     //    androidToken
     override fun onResume() {
+        absenList?.clear()
         cekLokasi()
         handler.post(updateClock)
 
@@ -334,11 +377,33 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener, LocationListener 
                         btnNewMasuk.visibility=View.VISIBLE
                         btnNewPulang.visibility=View.GONE
                     }
+                    loadAbsenTigaHari()
                 }
             }
 
         })
     }
+
+    private fun loadAbsenTigaHari() {
+        val apiEndPoint = ApiClient.getClient(this@HomeActivity)!!.create(ApiEndPoint::class.java)
+        GlobalScope.launch(Dispatchers.Main)
+        {
+            val call = apiEndPoint.absenTigaHari(NIK!!)
+            if(call!!.isSuccessful){
+                val res = call.body()
+                if(res!==null){
+                    if(res.absenTigaHari!=null){
+                        absenList?.addAll(res.absenTigaHari!!)
+                        adapter?.notifyDataSetChanged()
+                    }else{
+
+                    }
+                    Log.d("DATATIGAHARI",res.toString())
+                }
+            }
+        }
+    }
+
     companion object{
         var TIPE = "TIPE"
         var PENGGUNA = "PENGGUNA"

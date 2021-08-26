@@ -7,6 +7,7 @@ import com.misit.faceidchecklogptabp.Response.MainResponse.FirstLoadResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Call
+import retrofit2.Response
 import retrofit2.http.*
 
 interface ApiEndPoint{
@@ -79,6 +80,9 @@ interface ApiEndPoint{
     fun lastAbsen(@Query("nik") nik:String
     ): Call<AbsenLastResponse>?
 
+    @GET("/absen/get/AbsenTigaHari")
+    suspend fun absenTigaHari(@Query("nik") nik:String
+    ): Response<AbsenTigaHariResponse>?
     @GET("api/android/app/version")
     fun getAppVersion(@Query("app") app:String?)
             : Call<AppVersionResponse>?

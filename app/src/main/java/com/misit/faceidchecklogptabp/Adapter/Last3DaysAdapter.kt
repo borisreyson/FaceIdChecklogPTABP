@@ -2,39 +2,66 @@ package com.misit.faceidchecklogptabp.Adapter
 
 import android.content.Context
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
+import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.misit.faceidchecklogptabp.R
-import com.misit.faceidchecklogptabp.Response.Absen.DataItems
+import com.misit.faceidchecklogptabp.Response.AbsenTigaHariItem
+import org.joda.time.LocalDate
+import org.joda.time.format.DateTimeFormat
+import org.joda.time.format.DateTimeFormatter
 import java.text.SimpleDateFormat
 
 class Last3DaysAdapter(
     private val context: Context?,
-    private val listAbsen:MutableList<DataItems>):
-    RecyclerView.Adapter<ListAbsenAdapter.MyViewHolder>(){
-
+    private val listAbsen:MutableList<AbsenTigaHariItem>,
+    private val nik:String?,
+    private val nama:String?):
+    RecyclerView.Adapter<Last3DaysAdapter.MyViewHolder>(){
+    val fmt: DateTimeFormatter = DateTimeFormat.forPattern("EEEE, d MMMM, yyyy")
     private val layoutInflater: LayoutInflater
     private var simpleDateFormat: SimpleDateFormat? = null
-    private var onItemClickListener: ListAbsenAdapter.OnItemClickListener? = null
+//    private var onItemClickListener: OnItemClickListener? = null
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
-    ): ListAbsenAdapter.MyViewHolder {
+    ): MyViewHolder {
         val view = layoutInflater.inflate(R.layout.last_3_days_absen,parent,false)
-        return ListAbsenAdapter.MyViewHolder(view)
+        return MyViewHolder(view)
     }
+
 
     override fun getItemCount(): Int {
-        TODO("Not yet implemented")
+        return listAbsen.size
     }
 
-    override fun onBindViewHolder(holder: ListAbsenAdapter.MyViewHolder, position: Int) {
-        TODO("Not yet implemented")
+    override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
+        val absenList = listAbsen[position]
+        if(absenList.status=="Masuk"){
+            holder.cvRecent.setBackgroundResource(R.color.successColor)
+        }else if(absenList.status == "Pulang"){
+            holder.cvRecent.setBackgroundResource(R.color.errorColor)
+        }
+        holder.tvTGL.text = LocalDate.parse(absenList.tanggal).toString(fmt)
+        holder.tvNama.text = nama
+        holder.tvNik.text = nik
+        holder.tvJam.text = absenList.jam
     }
+    class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        var tvTGL = itemView.findViewById<View>(R.id.tvTGL) as TextView
+        var tvNama = itemView.findViewById<View>(R.id.tvNama) as TextView
+        var tvNik = itemView.findViewById<View>(R.id.tvNik) as TextView
+        var tvJam = itemView.findViewById<View>(R.id.tvJam) as TextView
+        var tvStatus = itemView.findViewById<View>(R.id.tvStatus) as TextView
+        var cvRecent = itemView.findViewById<View>(R.id.cvRecent) as CardView
 
+    }
 
     init {
         layoutInflater = LayoutInflater.from(context)
     }
+
 }
