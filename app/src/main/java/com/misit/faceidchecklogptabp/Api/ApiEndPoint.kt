@@ -77,7 +77,7 @@ interface ApiEndPoint{
 
     @GET("/absen/get/lastAbsen")
     fun lastAbsen(@Query("nik") nik:String
-    ): Call<LastAbsenResponse>?
+    ): Call<AbsenLastResponse>?
 
     @GET("api/android/app/version")
     fun getAppVersion(@Query("app") app:String?)

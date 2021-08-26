@@ -29,6 +29,7 @@ import com.misit.abpenergy.api.ApiClient
 import com.misit.abpenergy.api.ApiEndPoint
 import com.misit.faceidchecklogptabp.Absen.v1.DaftarWajahActivity
 import com.misit.faceidchecklogptabp.Response.Absen.DirInfoResponse
+import com.misit.faceidchecklogptabp.Response.AbsenLastResponse
 import com.misit.faceidchecklogptabp.Response.LastAbsenResponse
 import com.misit.faceidchecklogptabp.Response.MainResponse.FirstLoadResponse
 import com.misit.faceidchecklogptabp.Utils.PopupUtil
@@ -273,13 +274,13 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener, LocationListener 
     fun loadAbsen(){
         val apiEndPoint = ApiClient.getClient(this)!!.create(ApiEndPoint::class.java)
         val call = apiEndPoint.lastAbsen(NIK!!)
-        call?.enqueue(object : Callback<LastAbsenResponse?> {
-            override fun onFailure(call: Call<LastAbsenResponse?>, t: Throwable) {
+        call?.enqueue(object : Callback<AbsenLastResponse?> {
+            override fun onFailure(call: Call<AbsenLastResponse?>, t: Throwable) {
 
             }
             override fun onResponse(
-                call: Call<LastAbsenResponse?>,
-                response: Response<LastAbsenResponse?>
+                call: Call<AbsenLastResponse?>,
+                response: Response<AbsenLastResponse?>
             ) {
 
                 val lastRes = response.body()
@@ -291,6 +292,9 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener, LocationListener 
                             btnNewMasuk.visibility=View.GONE
                             btnNewPulang.visibility=View.VISIBLE
                             tvNewMasuk.visibility=View.VISIBLE
+                            if(lastRes.presensiMasuk!=null){
+                                tvNewMasuk.text = lastRes.presensiMasuk!!.jam.toString()
+                            }
                             tvNewPulang.visibility=View.GONE
                         }else
                             if(lastRes.lastNew=="Pulang"){
@@ -302,6 +306,12 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener, LocationListener 
                                 btnNewPulang.visibility=View.GONE
                                 tvNewMasuk.visibility=View.GONE
                                 tvNewPulang.visibility=View.VISIBLE
+                                if(lastRes.presensiMasuk!=null){
+                                    tvNewMasuk.text = lastRes.presensiMasuk!!.jam.toString()
+                                }
+                                if(lastRes.presensiPulang!=null){
+                                    tvNewPulang.text = lastRes.presensiPulang!!.jam.toString()
+                                }
 
                             }else{
 //                                chkMasuk.isChecked=false
