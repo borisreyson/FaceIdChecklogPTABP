@@ -228,7 +228,7 @@ class LoginActivity : AppCompatActivity(),View.OnClickListener {
                                 .setStringState(PrefsUtil.SHOW_ABSEN,
                                     usrResponse.dataLogin?.show_absen)
                             Toasty.success(this@LoginActivity,"Login Success ",Toasty.LENGTH_LONG).show()
-                            val intents = Intent(this@LoginActivity,IndexActivity::class.java)
+                            val intents = Intent(this@LoginActivity,HomeActivity::class.java)
                             finish()
                             startActivity(intents)
                             PopupUtil.dismissDialog()

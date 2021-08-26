@@ -12,6 +12,7 @@ import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
 import android.telephony.TelephonyManager
 import android.util.Log
@@ -40,10 +41,8 @@ import java.util.*
 
 class HomeActivity : AppCompatActivity(),View.OnClickListener, LocationListener {
     lateinit var handler : Handler
-    private var r :Runnable?=null
     lateinit var tm : TelephonyManager
     private var IMEI :String?=null
-    private var time: Date?=null
     private var csrf_token : String?=""
     private var jamSekarang : Int=0
     private var menitSekarang : Int=0
@@ -54,10 +53,16 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener, LocationListener 
     private var mLocation : Location?= null
     lateinit var viewPassword: View
     lateinit var alertDialog: AlertDialog
-//    private var mFirebaseAnalytics: FirebaseAnalytics? = null
     private var android_token : String?=null
 
     lateinit var mAdView : AdView
+    private val updateClock = object :Runnable{
+        override fun run() {
+            doJob()
+            handler.postDelayed(this,1000)
+        }
+
+    }
     @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,7 +81,6 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener, LocationListener 
         else{
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_PHONE_STATE),123)
         }
-        getGPS()
         PrefsUtil.initInstance(this)
         if(PrefsUtil.getInstance().getBooleanState(PrefsUtil.IS_LOGGED_IN,false)){
             NAMA = PrefsUtil.getInstance().getStringState(PrefsUtil.NAMA_LENGKAP,"")
@@ -89,8 +93,11 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener, LocationListener 
         }
         tvNama.text= NAMA
         tvNik.text= NIK
-        handler= Handler()
-        MobileAds.initialize(this) {}
+        handler= Handler(Looper.getMainLooper())
+//        MobileAds.initialize(this) {}
+//        r = Runnable{
+//            doJob()
+//        }
     }
 
     override fun onClick(v: View?) {
@@ -106,24 +113,6 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener, LocationListener 
     }
 
     override fun onProviderDisabled(provider: String?) {
-    }
-    private fun getGPS() {
-
-        mLocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.LOLLIPOP){
-            if(ActivityCompat.checkSelfPermission(this,
-                    Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED ){
-                PackageManager.PERMISSION_GRANTED
-                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),1)
-                return
-            }else{
-            }
-        }
-        assert(mLocationManager!=null)
-        mLocationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-            10,10f,this)
-
     }
 
     //    androidToken
@@ -143,19 +132,18 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener, LocationListener 
     //    androidToken
     override fun onResume() {
         cekLokasi()
+        handler.post(updateClock)
 
-
-        cekFaceID()
         super.onResume()
     }
 
     override fun onPause() {
-        handler.removeCallbacks(r)
+        handler.removeCallbacks(updateClock)
         super.onPause()
     }
 
     override fun onStop() {
-        handler.removeCallbacks(r)
+        handler.removeCallbacks(updateClock)
         super.onStop()
     }
     fun doJob() {
@@ -207,12 +195,10 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener, LocationListener 
                 }
             }
             tvTanggal.text = TANGGAL
-            handler.postDelayed(r,1000)
+//            handler.postDelayed(r,1000)
         }
     fun cekLokasi(){
-        r = Runnable{
-            cekLokasi()
-        }
+
         val apiEndPoint = ApiClient.getClient(this@HomeActivity)!!.create(ApiEndPoint::class.java)
         val call = apiEndPoint.getAndroidToken(NIK,"faceId",android_token)
         call?.enqueue(object : Callback<FirstLoadResponse?> {
@@ -231,7 +217,9 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener, LocationListener 
                         menitSekarang = koneksiCek.menit!!.toInt()
                         detikSekarang = koneksiCek.detik!!.toInt()
                         TANGGAL = "${koneksiCek.hari}, ${koneksiCek.tanggal}"
-                        doJob()
+//                        doJob()
+
+                    cekFaceID()
 //                    Log.d("JAMNYA", "${koneksiCek.jam}")
                 }else{
                     koneksiInActive()
@@ -297,7 +285,6 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener, LocationListener 
                 val lastRes = response.body()
                 if(lastRes!=null){
                     if(lastRes?.lastNew!=null){
-//                        Toasty.info(this@IndexActivity,lastRes?.lastAbsen).show()
                         if(lastRes.lastNew=="Masuk"){
                             btnNewPulang.isEnabled=true
                             btnNewMasuk.isEnabled=true

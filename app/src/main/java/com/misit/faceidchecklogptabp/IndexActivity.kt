@@ -70,11 +70,9 @@ class IndexActivity : AppCompatActivity(),View.OnClickListener, LocationListener
     private var detikSekarang : Int=0
     var tipe :String?=null
     private var app_version : String?=""
-    private var mLocationManager : LocationManager?=null
     private var mLocation : Location?= null
     lateinit var viewPassword: View
     lateinit var alertDialog: AlertDialog
-//    private var mFirebaseAnalytics: FirebaseAnalytics? = null
 
     lateinit var mAdView : AdView
 
@@ -94,7 +92,6 @@ class IndexActivity : AppCompatActivity(),View.OnClickListener, LocationListener
         }else{
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_PHONE_STATE),123)
         }
-//        getGPS()
         PrefsUtil.initInstance(this)
         if(PrefsUtil.getInstance().getBooleanState(PrefsUtil.IS_LOGGED_IN,true)){
             NAMA = PrefsUtil.getInstance().getStringState(PrefsUtil.NAMA_LENGKAP,"")
@@ -109,8 +106,6 @@ class IndexActivity : AppCompatActivity(),View.OnClickListener, LocationListener
         tvNik.text=NIK
         handler= Handler()
         MobileAds.initialize(this) {}
-
-//        handler.postDelayed(r,1)
         showInformasi()
         btn_masuk.setOnClickListener(this)
         btnListAbsen.setOnClickListener(this)
@@ -125,25 +120,6 @@ class IndexActivity : AppCompatActivity(),View.OnClickListener, LocationListener
         btnMasukan.setOnClickListener(this)
         btnDaftarWajah.setOnClickListener(this)
         btnMasukanList.setOnClickListener(this)
-
-    }
-
-    private fun getGPS() {
-
-            mLocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.LOLLIPOP){
-                if(ActivityCompat.checkSelfPermission(this,
-                        Manifest.permission.ACCESS_FINE_LOCATION)
-                    != PackageManager.PERMISSION_GRANTED ){
-                    PackageManager.PERMISSION_GRANTED
-                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),1)
-                    return
-                }else{
-                }
-            }
-            assert(mLocationManager!=null)
-            mLocationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                10,10f,this)
 
     }
 
@@ -249,7 +225,7 @@ class IndexActivity : AppCompatActivity(),View.OnClickListener, LocationListener
         val call = apiEndPoint.lastAbsen(NIK!!)
         call?.enqueue(object : Callback<LastAbsenResponse?> {
             override fun onFailure(call: Call<LastAbsenResponse?>, t: Throwable) {
-
+                loadAbsen()
             }
             override fun onResponse(
                 call: Call<LastAbsenResponse?>,
@@ -568,10 +544,7 @@ class IndexActivity : AppCompatActivity(),View.OnClickListener, LocationListener
     }
 
     fun showDialogInfoApp(){
-
         MobileAds.initialize(this) {}
-
-
         versionApp()
         viewPassword = LayoutInflater.from(this@IndexActivity).inflate(R.layout.info_app,null)
         if(viewPassword.parent!=null){
@@ -587,11 +560,9 @@ class IndexActivity : AppCompatActivity(),View.OnClickListener, LocationListener
         val adRequest = AdRequest.Builder().build()
         mAdView.loadAd(adRequest)
 //        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
-
         alertDialog = AlertDialog.Builder(this@IndexActivity)
             .setView(viewPassword).create()
         alertDialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-
         alertDialog.show()
     }
 
