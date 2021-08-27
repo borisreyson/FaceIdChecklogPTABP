@@ -1,12 +1,16 @@
 package com.misit.faceidchecklogptabp.Adapter
 
 import android.content.Context
+import android.media.Image
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.misit.faceidchecklogptabp.R
 import com.misit.faceidchecklogptabp.Response.AbsenTigaHariItem
 import org.joda.time.LocalDate
@@ -33,7 +37,6 @@ class Last3DaysAdapter(
         return MyViewHolder(view)
     }
 
-
     override fun getItemCount(): Int {
         return listAbsen.size
     }
@@ -49,6 +52,11 @@ class Last3DaysAdapter(
         holder.tvNama.text = nama
         holder.tvNik.text = nik
         holder.tvJam.text = absenList.jam
+        holder.tvStatus.text = absenList.status
+        Glide.with(context!!)
+            .load(absenList?.gambar)
+            .diskCacheStrategy(DiskCacheStrategy.NONE)
+            .into(holder.imgFace)
     }
     class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var tvTGL = itemView.findViewById<View>(R.id.tvTGL) as TextView
@@ -57,7 +65,7 @@ class Last3DaysAdapter(
         var tvJam = itemView.findViewById<View>(R.id.tvJam) as TextView
         var tvStatus = itemView.findViewById<View>(R.id.tvStatus) as TextView
         var cvRecent = itemView.findViewById<View>(R.id.cvRecent) as CardView
-
+        var imgFace = itemView.findViewById<View>(R.id.imgFace) as ImageView
     }
 
     init {

@@ -34,4 +34,10 @@
         <item name="android:textColor">@android:color/primary_text_dark</item>
         <item name="textAllCaps">true</item>
     </style>
+
+
+    <style name="LabelStyle">
+        <item name="android:background">@drawable/bg_green_floating_label</item>
+        <item name="android:textColor">#FFFFFF</item>
+    </style>
 </resources>

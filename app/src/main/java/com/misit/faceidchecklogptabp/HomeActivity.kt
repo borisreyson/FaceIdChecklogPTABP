@@ -2,9 +2,12 @@ package com.misit.faceidchecklogptabp
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.DatePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
@@ -16,23 +19,23 @@ import android.os.Looper
 import android.provider.Settings
 import android.telephony.TelephonyManager
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import android.widget.DatePicker
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.tasks.OnCompleteListener
+import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.messaging.FirebaseMessaging
 import com.misit.abpenergy.api.ApiClient
 import com.misit.abpenergy.api.ApiEndPoint
-import com.misit.faceidchecklogptabp.Absen.v1.DaftarWajahActivity
-import com.misit.faceidchecklogptabp.Absen.v1.MasukActivity
-import com.misit.faceidchecklogptabp.Absen.v1.PulangActivity
+import com.misit.faceidchecklogptabp.Absen.v1.*
 import com.misit.faceidchecklogptabp.Adapter.Last3DaysAdapter
 import com.misit.faceidchecklogptabp.Response.Absen.DirInfoResponse
 import com.misit.faceidchecklogptabp.Response.AbsenLastResponse
@@ -41,16 +44,22 @@ import com.misit.faceidchecklogptabp.Response.MainResponse.FirstLoadResponse
 import com.misit.faceidchecklogptabp.Utils.PopupUtil
 import com.misit.faceidchecklogptabp.Utils.PrefsUtil
 import kotlinx.android.synthetic.main.activity_home.*
+import kotlinx.android.synthetic.main.activity_home.tvJam
+import kotlinx.android.synthetic.main.activity_home.tvNama
+import kotlinx.android.synthetic.main.activity_home.tvNik
+import kotlinx.android.synthetic.main.lupa_masuk.view.*
+import kotlinx.android.synthetic.main.lupa_pulang.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
-class HomeActivity : AppCompatActivity(),View.OnClickListener, LocationListener {
+class HomeActivity : AppCompatActivity(),View.OnClickListener {
     lateinit var handler : Handler
     lateinit var tm : TelephonyManager
     private var IMEI :String?=null
@@ -68,7 +77,6 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener, LocationListener 
     private var adapter: Last3DaysAdapter? = null
     private var absenList: MutableList<AbsenTigaHariItem>? = null
     lateinit var rvLast3Day :RecyclerView
-    lateinit var mAdView : AdView
     private val updateClock = object :Runnable{
         override fun run() {
             doJob()
@@ -80,13 +88,13 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener, LocationListener 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
+        tvJam.text =""
         androidToken()
         var intPerm :Int= ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
         if(intPerm== PackageManager.PERMISSION_GRANTED){
             tm = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 IMEI = Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID)
-
             } else {
                 IMEI = tm.getDeviceId()
             }
@@ -120,25 +128,38 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener, LocationListener 
         btnNewMasuk.setOnClickListener(this)
         btnNewPulang.setOnClickListener(this)
         btnFloatHistory.setOnClickListener(this)
+        btnListAllAbsen.setOnClickListener(this)
+        lpAbsenMasuk.setOnClickListener(this)
+        lpAbsenPulang.setOnClickListener(this)
     }
 
     override fun onClick(v: View?) {
         if(v?.id==R.id.btnNewMasuk){
             val intent= Intent(this, MasukActivity::class.java)
-            intent.putExtra(MasukActivity.NIK, IndexActivity.NIK)
+            intent.putExtra(MasukActivity.NIK, NIK)
             startActivity(intent)
-        }
+        }else
         if(v?.id==R.id.btnNewPulang){
             val intent= Intent(this, PulangActivity::class.java)
-            intent.putExtra(PulangActivity.NIK, IndexActivity.NIK)
+            intent.putExtra(PulangActivity.NIK, NIK)
             startActivity(intent)
-        }
+        }else
         if(v?.id==R.id.btnFloatHistory){
             val intent= Intent(this, LihatAbsenActivity::class.java)
             intent.putExtra(LihatAbsenActivity.NIK, NIK)
             startActivity(intent)
+        }else
+        if(v?.id == R.id.lpAbsenMasuk){
+            showDialogLupaMasuk()
         }
-
+        if(v?.id == R.id.lpAbsenPulang){
+            showDialogLupaPulang()
+        }else
+        if (v?.id==R.id.btnListAllAbsen){
+            listAbsen()
+        }else{
+            btnNewLupaAbsen.collapse()
+        }
     }
     fun listAbsen(){
         val intent= Intent(this, ListAbsenActivity::class.java)
@@ -146,18 +167,6 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener, LocationListener 
 
         startActivity(intent)
     }
-    override fun onLocationChanged(location: Location?) {
-    }
-
-    override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
-    }
-
-    override fun onProviderEnabled(provider: String?) {
-    }
-
-    override fun onProviderDisabled(provider: String?) {
-    }
-
     //    androidToken
     fun androidToken(){
         FirebaseMessaging.getInstance().isAutoInitEnabled = true
@@ -174,10 +183,15 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener, LocationListener 
     }
     //    androidToken
     override fun onResume() {
-        absenList?.clear()
+//        absenList?.clear()
+        loadAbsenTigaHari()
         cekLokasi()
         handler.post(updateClock)
-
+        if(SHOW_ABSEN =="1"){
+            btnListAllAbsen.visibility=View.VISIBLE
+        }else{
+            btnListAllAbsen.visibility=View.GONE
+        }
         super.onResume()
     }
 
@@ -242,34 +256,32 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener, LocationListener 
 //            handler.postDelayed(r,1000)
         }
     fun cekLokasi(){
-
-        val apiEndPoint = ApiClient.getClient(this@HomeActivity)!!.create(ApiEndPoint::class.java)
-        val call = apiEndPoint.getAndroidToken(NIK,"faceId",android_token)
-        call?.enqueue(object : Callback<FirstLoadResponse?> {
-            override fun onFailure(call: Call<FirstLoadResponse?>, t: Throwable) {
-//                koneksiInActive()
-                cekLokasi()
-                Log.d("ErrorLokasi",t.toString())
-            }
-
-            override fun onResponse(call: Call<FirstLoadResponse?>, response: Response<FirstLoadResponse?>) {
-                var koneksiCek = response.body()
-                Log.v("CekData",koneksiCek.toString())
-                if(koneksiCek!=null){
-                    if(koneksiCek.jam!=null)
-                        jamSekarang = koneksiCek.jam!!.toInt()
-                        menitSekarang = koneksiCek.menit!!.toInt()
-                        detikSekarang = koneksiCek.detik!!.toInt()
-                        TANGGAL = "${koneksiCek.hari}, ${koneksiCek.tanggal}"
-//                        doJob()
-
-                    cekFaceID()
-//                    Log.d("JAMNYA", "${koneksiCek.jam}")
+        tvJam.text =""
+        val apiEndPoint = ApiClient.getClient(this@HomeActivity)?.create(ApiEndPoint::class.java)
+        GlobalScope.launch {
+            val call = apiEndPoint?.tokenCorutine(NIK,"faceId",android_token)
+                if (call != null) {
+                    if(call.isSuccessful)
+                    {
+                        val respon = call.body()
+                        if(respon!=null){
+                            if(respon.jam!=null)
+                                jamSekarang = respon.jam!!.toInt()
+                            menitSekarang = respon.menit!!.toInt()
+                            detikSekarang = respon.detik!!.toInt()
+                            TANGGAL = "${respon.hari}, ${respon.tanggal}"
+                            cekFaceID()
+                        }else{
+                            cekLokasi()
+                        }
+                    }else{
+                        cekLokasi()
+                    }
                 }else{
-                    koneksiInActive()
+                    cekLokasi()
                 }
-            }
-        })
+        }
+
 
     }
     fun koneksiInActive(){
@@ -284,63 +296,62 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener, LocationListener 
             .show()
     }
     fun cekFaceID(){
-        val apiEndPoint = ApiClient.getClient(this)!!.create(ApiEndPoint::class.java)
-        val call = apiEndPoint.getDirInfo(IndexActivity.NIK!!)
-        call?.enqueue(object : Callback<DirInfoResponse?> {
-            override fun onFailure(call: Call<DirInfoResponse?>, t: Throwable) {
-                cekFaceID()
-            }
-            override fun onResponse(
-                call: Call<DirInfoResponse?>,
-                response: Response<DirInfoResponse?>
-            ) {
-                val faceRes = response.body()
-                if(faceRes!=null){
-                    if(faceRes.folder!!){
+        val apiEndPoint = ApiClient.getClient(this)?.create(ApiEndPoint::class.java)
+        GlobalScope.launch {
+            val call = apiEndPoint?.dirInfoCorutine(NIK!!)
+            if(call!=null){
+                if(call.isSuccessful){
+                    val respon = call.body()
+                    if(respon!=null){
+                        if(respon.folder!=null){
+                            if(respon.folder){
 //                        btnFaceFalse.visibility=View.GONE
 //                        btnFaceTrue.visibility=View.VISIBLE
-                        PopupUtil.dismissDialog()
-                        loadAbsen()
+                                PopupUtil.dismissDialog()
+                                loadAbsen()
 //                        btnDaftarWajah.visibility=View.GONE
-                    }else{
+                            }else{
 //                        btnFaceFalse.visibility=View.VISIBLE
 //                        btnFaceTrue.visibility=View.GONE
-                        PopupUtil.dismissDialog()
-                        val intent = Intent(this@HomeActivity, DaftarWajahActivity::class.java)
-                        startActivity(intent)
+                                PopupUtil.dismissDialog()
+                                val intent = Intent(this@HomeActivity, DaftarWajahActivity::class.java)
+                                startActivity(intent)
+                            }
+                        }else{
+                            cekFaceID()
+                        }
+
+                    }else{
+                        cekFaceID()
                     }
+                }else{
+                    cekFaceID()
                 }
+            }else{
+                cekFaceID()
             }
-        })
-        PopupUtil.dismissDialog()
+        }
     }
     fun loadAbsen(){
-        val apiEndPoint = ApiClient.getClient(this)!!.create(ApiEndPoint::class.java)
-        val call = apiEndPoint.lastAbsen(NIK!!)
-        call?.enqueue(object : Callback<AbsenLastResponse?> {
-            override fun onFailure(call: Call<AbsenLastResponse?>, t: Throwable) {
-
-            }
-            override fun onResponse(
-                call: Call<AbsenLastResponse?>,
-                response: Response<AbsenLastResponse?>
-            ) {
-
-                val lastRes = response.body()
-                if(lastRes!=null){
-                    if(lastRes?.lastNew!=null){
-                        if(lastRes.lastNew=="Masuk"){
-                            btnNewPulang.isEnabled=true
-                            btnNewMasuk.isEnabled=true
-                            btnNewMasuk.visibility=View.GONE
-                            btnNewPulang.visibility=View.VISIBLE
-                            tvNewMasuk.visibility=View.VISIBLE
-                            if(lastRes.presensiMasuk!=null){
-                                tvNewMasuk.text = lastRes.presensiMasuk!!.jam.toString()
-                            }
-                            tvNewPulang.visibility=View.GONE
-                        }else
-                            if(lastRes.lastNew=="Pulang"){
+        val apiEndPoint = ApiClient.getClient(this)?.create(ApiEndPoint::class.java)
+        GlobalScope.launch(Dispatchers.Main){
+            val call = apiEndPoint?.lastAbsenCorutine(NIK!!)
+            if(call!=null){
+                if(call.isSuccessful){
+                    val response= call.body()
+                    if(response!=null){
+                        if(response.lastNew!=null){
+                            if(response.lastNew=="Masuk"){
+                                btnNewPulang.isEnabled=true
+                                btnNewMasuk.isEnabled=true
+                                btnNewMasuk.visibility=View.GONE
+                                btnNewPulang.visibility=View.VISIBLE
+                                tvNewMasuk.visibility=View.VISIBLE
+                                if(response.presensiMasuk!=null){
+                                    tvNewMasuk.text = response.presensiMasuk!!.jam.toString()
+                                }
+                                tvNewPulang.visibility=View.GONE
+                            }else if(response.lastNew=="Pulang"){
 //                                chkMasuk.isChecked=true
 //                                chkPulang.isChecked=true
                                 btnNewPulang.isEnabled=true
@@ -349,11 +360,11 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener, LocationListener 
                                 btnNewPulang.visibility=View.GONE
                                 tvNewMasuk.visibility=View.GONE
                                 tvNewPulang.visibility=View.VISIBLE
-                                if(lastRes.presensiMasuk!=null){
-                                    tvNewMasuk.text = lastRes.presensiMasuk!!.jam.toString()
+                                if(response.presensiMasuk!=null){
+                                    tvNewMasuk.text = response.presensiMasuk!!.jam.toString()
                                 }
-                                if(lastRes.presensiPulang!=null){
-                                    tvNewPulang.text = lastRes.presensiPulang!!.jam.toString()
+                                if(response.presensiPulang!=null){
+                                    tvNewPulang.text = response.presensiPulang!!.jam.toString()
                                 }
 
                             }else{
@@ -366,44 +377,129 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener, LocationListener 
                                 tvNewMasuk.visibility=View.GONE
                                 tvNewPulang.visibility=View.GONE
                             }
-                        if(btnNewMasuk.isEnabled==false){
-//                            Toasty.info(this@IndexActivity,"Anda Sudah Melakukan Absen Masuk Dan Pulang!",Toasty.LENGTH_SHORT).show()
-                        }
-                    }else{
+                            if(btnNewMasuk.isEnabled==false){
+
+                            }
+                        }else{
 //                        chkMasuk.isChecked=false
 //                        chkPulang.isChecked=false
-                        btnNewMasuk.isEnabled=true
-                        btnNewPulang.isEnabled=true
-                        btnNewMasuk.visibility=View.VISIBLE
-                        btnNewPulang.visibility=View.GONE
-                    }
-                    loadAbsenTigaHari()
-                }
-            }
-
-        })
-    }
-
-    private fun loadAbsenTigaHari() {
-        val apiEndPoint = ApiClient.getClient(this@HomeActivity)!!.create(ApiEndPoint::class.java)
-        GlobalScope.launch(Dispatchers.Main)
-        {
-            val call = apiEndPoint.absenTigaHari(NIK!!)
-            if(call!!.isSuccessful){
-                val res = call.body()
-                if(res!==null){
-                    if(res.absenTigaHari!=null){
-                        absenList?.addAll(res.absenTigaHari!!)
-                        adapter?.notifyDataSetChanged()
+                            btnNewMasuk.isEnabled=true
+                            btnNewPulang.isEnabled=true
+                            btnNewMasuk.visibility=View.VISIBLE
+                            btnNewPulang.visibility=View.GONE
+                        }
                     }else{
-
+                        loadAbsen()
                     }
-                    Log.d("DATATIGAHARI",res.toString())
+                }else{
+                    loadAbsen()
                 }
             }
         }
     }
 
+    private fun loadAbsenTigaHari() {
+        val apiEndPoint = ApiClient.getClient(this@HomeActivity)?.create(ApiEndPoint::class.java)
+        GlobalScope.launch(Dispatchers.Main)
+        {
+            val call = apiEndPoint?.absenTigaHari(NIK!!)
+            if(call!=null){
+                if(call.isSuccessful){
+                    val res = call.body()
+                    if(res!==null){
+                        if(res.absenTigaHari!=null){
+                            absenList?.addAll(res.absenTigaHari!!)
+                            adapter?.notifyDataSetChanged()
+                        }else{
+                            loadAbsenTigaHari()
+                        }
+                        Log.d("DATATIGAHARI",res.toString())
+                    }else{
+                        loadAbsenTigaHari()
+                    }
+                }else{
+                    loadAbsenTigaHari()
+                }
+            }else{
+                loadAbsenTigaHari()
+            }
+
+        }
+    }
+    fun showDialogLupaMasuk(){
+        MobileAds.initialize(this) {}
+
+        viewPassword = LayoutInflater.from(this@HomeActivity).inflate(R.layout.lupa_masuk,null)
+        if(viewPassword.parent!=null){
+            (viewPassword.parent as ViewGroup).removeView(viewPassword)
+        }
+        viewPassword.tglLupaAbsenMasuk.setOnClickListener{
+            showDialogTgl(viewPassword.tglLupaAbsenMasuk)
+        }
+        viewPassword.btnLupaAbsenMasuk.setOnClickListener{
+            if(viewPassword.tglLupaAbsenMasuk.text!!.isNotEmpty()){
+                val intent= Intent(this, LupaMasukActivity::class.java)
+                intent.putExtra(LupaMasukActivity.TGL_LUPA_ABSEN, viewPassword.tglLupaAbsenMasuk.text.toString())
+                startActivity(intent)
+                alertDialog.dismiss()
+            }else{
+                viewPassword.tilTanggalLupaMasuk.error="Tidak Boleh Kosong"
+            }
+        }
+
+        viewPassword.btnBatalLupaAbsenMasuk.setOnClickListener{
+            alertDialog.dismiss()
+        }
+        alertDialog = AlertDialog.Builder(this@HomeActivity)
+            .setView(viewPassword).create()
+        alertDialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        alertDialog.show()
+    }
+    fun showDialogLupaPulang(){
+        viewPassword = LayoutInflater.from(this@HomeActivity).inflate(R.layout.lupa_pulang,null)
+        if(viewPassword.parent!=null){
+            (viewPassword.parent as ViewGroup).removeView(viewPassword)
+        }
+        viewPassword.tglLupaAbsenPulang.setOnClickListener{
+            showDialogTgl(viewPassword.tglLupaAbsenPulang)
+        }
+        viewPassword.btnLupaAbsenPulang.setOnClickListener{
+            if(viewPassword.tglLupaAbsenPulang.text!!.isNotEmpty()){
+                val intent= Intent(this, LupaPulangActivity::class.java)
+                intent.putExtra(LupaPulangActivity.TGL_LUPA_ABSEN, viewPassword.tglLupaAbsenPulang.text.toString())
+                startActivity(intent)
+                alertDialog.dismiss()
+            }else{
+                viewPassword.tilTanggalLupaPulang.error="Tidak Boleh Kosong"
+            }
+        }
+
+        viewPassword.btnBatalLupaAbsenPulang.setOnClickListener{
+            alertDialog.dismiss()
+        }
+        alertDialog = AlertDialog.Builder(this@HomeActivity)
+            .setView(viewPassword).create()
+        alertDialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        alertDialog.show()
+    }
+
+    fun showDialogTgl(inTgl: TextInputEditText){
+        val now = Calendar.getInstance()
+        val datePicker  = DatePickerDialog.OnDateSetListener{
+                view: DatePicker?, year: Int, month: Int, dayOfMonth: Int ->
+            now.set(Calendar.YEAR,year)
+            now.set(Calendar.MONTH,month)
+            now.set(Calendar.DAY_OF_MONTH,dayOfMonth)
+            inTgl.setText(SimpleDateFormat("dd MMMM yyyy").format(now.time))
+        }
+
+        DatePickerDialog(this,
+            datePicker,
+            now.get(Calendar.YEAR),
+            now.get(Calendar.MONTH),
+            now.get(Calendar.DAY_OF_MONTH)
+        ).show()
+    }
     companion object{
         var TIPE = "TIPE"
         var PENGGUNA = "PENGGUNA"

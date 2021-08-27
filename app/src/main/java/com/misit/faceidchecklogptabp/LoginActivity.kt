@@ -47,7 +47,6 @@ class LoginActivity : AppCompatActivity(),View.OnClickListener {
     private var IMEI : String?=""
     lateinit var tm : TelephonyManager
 
-    lateinit var mAdView : AdView
     private var mFirebaseAnalytics: FirebaseAnalytics? = null
     @SuppressLint("MissingPermission")
 
@@ -99,41 +98,6 @@ class LoginActivity : AppCompatActivity(),View.OnClickListener {
         cekLokasi()
         androidToken()
         versionApp()
-        MobileAds.initialize(this) {}
-
-        mAdView = findViewById(R.id.adViewIndex)
-        val adRequest = AdRequest.Builder().build()
-        mAdView.loadAd(adRequest)
-
-        mAdView.adListener = object: AdListener() {
-            override fun onAdLoaded() {
-                // Code to be executed when an ad finishes loading.
-            }
-
-            override fun onAdFailedToLoad(errorCode : Int) {
-                Log.d("errorCode",errorCode.toString())
-                // Code to be executed when an ad request fails.
-            }
-
-            override fun onAdOpened() {
-                // Code to be executed when an ad opens an overlay that
-                // covers the screen.
-            }
-
-            override fun onAdClicked() {
-                // Code to be executed when the user clicks on an ad.
-            }
-
-            override fun onAdLeftApplication() {
-                // Code to be executed when the user has left the app.
-            }
-
-            override fun onAdClosed() {
-                // Code to be executed when the user is about to return
-                // to the app after tapping on an ad.
-            }
-        }
-
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
         super.onResume()
     }

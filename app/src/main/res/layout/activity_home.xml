@@ -94,7 +94,7 @@
                 android:layout_weight="0.94"
                 android:layout_width="match_parent"
                 android:layout_height="0dp">
-                <Button
+                <com.google.android.material.button.MaterialButton
                     style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
                     android:id="@+id/btnNewMasuk"
                     android:visibility="visible"
@@ -106,7 +106,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:backgroundTint="#008C83"
-                    android:drawableLeft="@drawable/scan_wajah"/>
+                    android:drawableLeft="@drawable/wajah_ic"/>
                 <TextView
                     android:visibility="gone"
                     android:id="@+id/tvNewMasuk"
@@ -125,7 +125,7 @@
     android:layout_height="30dp"
     android:layout_weight="0.005"
     android:background="@color/borderSmoth"/>
-                <Button
+                <com.google.android.material.button.MaterialButton
                     style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
                     android:visibility="visible"
                     android:id="@+id/btnNewPulang"
@@ -137,7 +137,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="5dp"
                     android:backgroundTint="#ED2124"
-                    android:drawableLeft="@drawable/scan_wajah"/>
+                    android:drawableLeft="@drawable/wajah_ic"/>
                 <TextView
                     android:visibility="gone"
                     android:id="@+id/tvNewPulang"
@@ -183,7 +183,7 @@
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/btnFloatHistory"
         style="@style/Widget.MaterialComponents.FloatingActionButton"
-        android:text="Last Absen"
+        android:text="Lihat Absen"
         android:backgroundTint="@color/colorPrimaryDark"
         android:textColor="@color/white"
         app:icon="@drawable/ic_baseline_history_24"
@@ -193,7 +193,58 @@
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="20dp"
         app:iconTint="@color/white"
-        android:layout_marginEnd="20dp">
+        android:layout_marginEnd="20dp"/>
 
-    </com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton>
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/btnListAllAbsen"
+        style="@style/Widget.MaterialComponents.FloatingActionButton"
+        android:text="Lihat Semua Absen"
+        android:backgroundTint="@color/colorPrimary"
+        android:textColor="@color/white"
+        app:icon="@drawable/ic_baseline_history_24"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="80dp"
+        app:iconTint="@color/white"
+        android:layout_marginEnd="20dp"/>
+
+    <com.getbase.floatingactionbutton.FloatingActionsMenu
+        android:id="@+id/btnNewLupaAbsen"
+        style="@style/Widget.MaterialComponents.FloatingActionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:fab_addButtonColorNormal="@color/red_smooth"
+        app:fab_addButtonColorPressed="@color/red_smooth"
+        app:fab_addButtonPlusIconColor="@color/white"
+        app:fab_expandDirection="up"
+        app:fab_addButtonSize="normal"
+        app:fab_labelStyle="@style/LabelStyle"
+        app:fab_labelsPosition="right"
+        android:layout_alignParentLeft="true"
+        android:tooltipText="LUPA ABSEN"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="15dp"
+        android:layout_marginStart="15dp"
+        >
+        <com.getbase.floatingactionbutton.FloatingActionButton
+            android:id="@+id/lpAbsenMasuk"
+            app:fab_size="mini"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:fab_colorNormal="@color/red_smooth"
+            app:fab_colorPressed="@color/red_smooth"
+            app:fab_icon="@drawable/wajah_ic"
+            app:fab_title="Lupa Absen Masuk" />
+        <com.getbase.floatingactionbutton.FloatingActionButton
+            android:id="@+id/lpAbsenPulang"
+            app:fab_size="mini"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:fab_colorNormal="@color/red_smooth"
+            app:fab_icon="@drawable/wajah_ic"
+            app:fab_colorPressed="@color/red_smooth"
+            app:fab_title="Lupa Absen Pulang" />
+    </com.getbase.floatingactionbutton.FloatingActionsMenu>
 </RelativeLayout>

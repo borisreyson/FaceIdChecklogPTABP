@@ -70,6 +70,12 @@ interface ApiEndPoint{
                         @Query("android_token") android_token:String?)
             : Call<FirstLoadResponse>?
 
+    @GET("api/android/token/firebase/new")
+    suspend fun tokenCorutine(@Query("nik") nik:String?,
+                        @Query("app") app:String?,
+                        @Query("android_token") android_token:String?)
+            : Response<FirstLoadResponse>?
+
     @GET("api/android/get/list/absen")
     fun getAbsen(@Query("nik") nik:String,
                  @Query("status") status:String,
@@ -80,12 +86,19 @@ interface ApiEndPoint{
     fun lastAbsen(@Query("nik") nik:String
     ): Call<AbsenLastResponse>?
 
+    @GET("/absen/get/lastAbsen")
+    suspend fun lastAbsenCorutine(@Query("nik") nik:String
+    ): Response<AbsenLastResponse>?
+
     @GET("/absen/get/AbsenTigaHari")
     suspend fun absenTigaHari(@Query("nik") nik:String
     ): Response<AbsenTigaHariResponse>?
     @GET("api/android/app/version")
     fun getAppVersion(@Query("app") app:String?)
             : Call<AppVersionResponse>?
+    @GET("api/android/app/version")
+    suspend fun getAppVersionCorutine(@Query("app") app:String?)
+            : Response<AppVersionResponse>?
 
     @GET("/absen/list/all")
     fun listAllAbsen(@Query("tanggal") tanggal:String?,
@@ -101,6 +114,10 @@ interface ApiEndPoint{
     @GET("api/android/check/folder")
     fun getDirInfo(@Query("nik") nik:String?)
             : Call<DirInfoResponse>?
+
+    @GET("api/android/check/folder")
+   suspend fun dirInfoCorutine(@Query("nik") nik:String?)
+            : Response<DirInfoResponse>?
     @GET("/absen/apl/masukan")
     fun getListMasukan(@Query("page") page:Int?,
                        @Query("cari") cari:String?)

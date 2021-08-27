@@ -48,7 +48,7 @@
                     android:layout_height="wrap_content"
                     android:text="18060207"/>
                 <TextView
-                    android:textSize="30sp"
+                    android:textSize="20sp"
                     android:textColor="@color/white"
                     android:padding="2dp"
                     android:gravity="center_vertical"
@@ -59,7 +59,6 @@
             </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
-
     <androidx.cardview.widget.CardView
         android:layout_width="70dp"
         android:layout_height="70dp"
@@ -68,16 +67,14 @@
         android:layout_marginRight="2dp"
         android:layout_marginTop="2dp"
         app:cardElevation="10dp"
-        app:cardCornerRadius="70dp">
+        app:cardCornerRadius="35dp">
         <ImageView
-            android:padding="15dp"
             android:scaleType="centerCrop"
             android:id="@+id/imgFace"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:src="@drawable/abp_logo"/>
     </androidx.cardview.widget.CardView>
-
     <androidx.cardview.widget.CardView
         android:layout_width="wrap_content"
         android:layout_height="25dp"
