@@ -14,6 +14,8 @@ interface ApiEndPoint{
 
     @GET("refresh-csrf")
     fun getToken(@Query("csrf_token") tokenId:String): Call<CsrfTokenResponse>?
+    @GET("refresh-csrf")
+    suspend fun getTokenCorutine(@Query("csrf_token") tokenId:String): Response<CsrfTokenResponse>?
 
     @Multipart
     @POST("upload_image.php")
@@ -37,6 +39,8 @@ interface ApiEndPoint{
 //                        @Field("password") password:String?): Call<UserResponse>
     @GET("api/android/app/cek/lokasi")
     fun cekLokasi(): Call<AbpResponse>?
+    @GET("api/android/app/cek/lokasi")
+    suspend fun cekLokasiCorrutine(): Response<AbpResponse>?
 
     @FormUrlEncoded
     @POST("api/android/post/login-face-id")
@@ -47,6 +51,15 @@ interface ApiEndPoint{
                         @Field("app_version") app_version:String?,
                         @Field("app_name") app_name:String?,
                         @Field("imei") imei:String?): Call<LoginResponse>
+    @FormUrlEncoded
+    @POST("api/android/post/login-face-id")
+    suspend fun loginCheckloginCorutine(@Field("username") username:String?,
+                        @Field("password") password:String?,
+                        @Field("_token") csrf_token:String?,
+                        @Field("android_token") android_token:String?,
+                        @Field("app_version") app_version:String?,
+                        @Field("app_name") app_name:String?,
+                        @Field("imei") imei:String?): Response<LoginResponse>
 
     @FormUrlEncoded
     @POST("api/android/post/updatePasswordFace")

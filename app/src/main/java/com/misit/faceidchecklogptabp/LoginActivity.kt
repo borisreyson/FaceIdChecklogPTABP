@@ -35,6 +35,8 @@ import com.misit.faceidchecklogptabp.Utils.PopupUtil
 import com.misit.faceidchecklogptabp.Utils.PrefsUtil
 import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.activity_login.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -102,21 +104,21 @@ class LoginActivity : AppCompatActivity(),View.OnClickListener {
         super.onResume()
     }
     fun cekLokasi(){
-        val apiEndPoint = ApiClient.getClient(this)!!.create(ApiEndPoint::class.java)
-        val call = apiEndPoint.cekLokasi()
-        call?.enqueue(object : Callback<AbpResponse?> {
-            override fun onFailure(call: Call<AbpResponse?>, t: Throwable) {
+        val apiEndPoint = ApiClient.getClient(this)?.create(ApiEndPoint::class.java)
+        GlobalScope.launch {
+            val call = apiEndPoint?.cekLokasiCorrutine()
+            if(call!=null){
+                if(call.isSuccessful){
+                    getToken()
+                }else{
+                    cekLokasi()
+                }
+            }else{
                 koneksiInActive()
             }
-
-            override fun onResponse(call: Call<AbpResponse?>, response: Response<AbpResponse?>) {
-                getToken()
-
-            }
-
-        })
-
+        }
     }
+
     fun androidToken(){
         FirebaseMessaging.getInstance().isAutoInitEnabled = true
         FirebaseMessaging.getInstance().token
@@ -132,18 +134,20 @@ class LoginActivity : AppCompatActivity(),View.OnClickListener {
     }
     private fun getToken() {
         val apiEndPoint = ApiClient.getClient(this)!!.create(ApiEndPoint::class.java)
-        val call = apiEndPoint.getToken("csrf_token")
-        call?.enqueue(object : Callback<CsrfTokenResponse> {
-            override fun onFailure(call: Call<CsrfTokenResponse>, t: Throwable) {
-                Toast.makeText(this@LoginActivity,"Error : $t", Toast.LENGTH_SHORT).show()
+        GlobalScope.launch {
+            val call = apiEndPoint.getTokenCorutine("csrf_token")
+            if(call!=null){
+                if(call.isSuccessful){
+                    if(call.body()!=null){
+                        csrf_token = call.body()?.csrfToken
+                    }
+                }else{
+                    getToken()
+                }
+            }else{
+                getToken()
             }
-            override fun onResponse(
-                call: Call<CsrfTokenResponse>,
-                response: Response<CsrfTokenResponse>
-            ) {
-                csrf_token = response.body()?.csrfToken
-            }
-        })
+        }
     }
     fun versionApp(){
         Use@ try {
@@ -156,26 +160,19 @@ class LoginActivity : AppCompatActivity(),View.OnClickListener {
     fun loginSubmit(userIn:String,passIn:String){
         PopupUtil.showLoading(this@LoginActivity,"Logging In","Please Wait")
         val apiEndPoint = ApiClient.getClient(this)!!.create(ApiEndPoint::class.java)
-        val call = apiEndPoint.loginChecklogin(
-            userIn,
-            passIn,
-            csrf_token,
-            android_token,
-            app_version,
-            "faceId",
-            IMEI.toString()
+        GlobalScope.launch {
+            val call = apiEndPoint.loginCheckloginCorutine(
+                userIn,
+                passIn,
+                csrf_token,
+                android_token,
+                app_version,
+                "faceId",
+                IMEI.toString()
             )
-        call?.enqueue(object : Callback<LoginResponse?> {
-            override fun onFailure(call: Call<LoginResponse?>, t: Throwable) {
-                Toasty.error(this@LoginActivity,"Error While Loging...",Toasty.LENGTH_SHORT).show()
-                PopupUtil.dismissDialog()
-            }
-
-            override fun onResponse(
-                call: Call<LoginResponse?>,
-                response: Response<LoginResponse?>
-            ) {
-                var usrResponse =response.body()
+            if(call!=null){
+                if(call.isSuccessful){
+                    val usrResponse = call.body()
                     if (usrResponse!=null){
                         if (usrResponse.success!!){
                             PopupUtil.dismissDialog()
@@ -209,10 +206,12 @@ class LoginActivity : AppCompatActivity(),View.OnClickListener {
                         InUsername.requestFocus()
                         PopupUtil.dismissDialog()
                     }
+                }else{
+                    Toasty.error(this@LoginActivity,"Error While Loging...",Toasty.LENGTH_SHORT).show()
+                    PopupUtil.dismissDialog()
+                }
             }
-
-
-        })
+        }
     }
     private fun clearForm(){
         InUsername.text=null;

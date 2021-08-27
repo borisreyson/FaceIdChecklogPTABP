@@ -228,7 +228,8 @@ class MainActivity : AppCompatActivity() {
             var besar = progressHorizontal.progress
             progressHorizontal.progress = besar + 10
             if (besar < 40) {
-                verifyStoragePermissions()
+//                verifyStoragePermissions()
+                updateProgress()
             } else if (besar < 100) {
                 updateProgress()
             } else if (besar == 100) {

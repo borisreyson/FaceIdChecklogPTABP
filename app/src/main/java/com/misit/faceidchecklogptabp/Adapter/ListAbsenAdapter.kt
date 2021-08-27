@@ -29,6 +29,8 @@ class ListAbsenAdapter (
     private val layoutInflater: LayoutInflater
     private var simpleDateFormat: SimpleDateFormat? = null
     private var onItemClickListener: OnItemClickListener? = null
+    val fmt: DateTimeFormatter = DateTimeFormat.forPattern("d MMMM, yyyy")
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ListAbsenAdapter.MyViewHolder {
         val view = layoutInflater.inflate(R.layout.grid_list_absen,parent,false)
         return MyViewHolder(view)
@@ -61,12 +63,8 @@ class ListAbsenAdapter (
         }
         holder.nama.text = listAbsen.nama
         val tanggal = LocalDate.parse(listAbsen.tanggal)
-//        val jam = LocalDate.parse(listAbsen.jam)
 
-        val fmt: DateTimeFormatter = DateTimeFormat.forPattern("d MMMM, yyyy")
-//        val timeFormat:DateTimeFormatter = DateTimeFormat.forPattern("HH:mm:ss")
-
-        holder.tanggal.text = tanggal.toString(fmt)
+        holder.tanggal.text = tanggal.toString(fmt)?.toLowerCase(Locale.getDefault())
         holder.jam.text = listAbsen.jam
         holder.status.text = listAbsen.status
         holder.tvKeterangan.text="${listAbsen.lupa_absen}"
