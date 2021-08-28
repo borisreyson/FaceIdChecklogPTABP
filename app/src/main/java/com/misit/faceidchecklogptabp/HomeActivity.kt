@@ -348,7 +348,7 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
                                 btnNewPulang.visibility=View.VISIBLE
                                 tvNewMasuk.visibility=View.VISIBLE
                                 if(response.presensiMasuk!=null){
-                                    tvNewMasuk.text = response.presensiMasuk!!.jam.toString()
+                                    tvNewMasuk.text = "${response.presensiMasuk?.jam}"
                                 }
                                 tvNewPulang.visibility=View.GONE
                             }else if(response.lastNew=="Pulang"){
@@ -361,10 +361,13 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
                                 tvNewMasuk.visibility=View.GONE
                                 tvNewPulang.visibility=View.VISIBLE
                                 if(response.presensiMasuk!=null){
-                                    tvNewMasuk.text = response.presensiMasuk!!.jam.toString()
+                                    val presensiMasuk = response.presensiMasuk
+                                    if(presensiMasuk!=null){
+                                        tvNewMasuk.text = "${presensiMasuk?.jam}"
+                                    }
                                 }
                                 if(response.presensiPulang!=null){
-                                    tvNewPulang.text = response.presensiPulang!!.jam.toString()
+                                    tvNewPulang.text = "${response.presensiPulang?.jam}"
                                 }
 
                             }else{

@@ -14,20 +14,29 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
-        <Button
+        <com.google.android.material.button.MaterialButton
+            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+            android:background="@color/colorPrimaryDark"
+            android:layout_margin="5dp"
             android:id="@+id/btn_active_camera"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Scan Ulang"
             android:visibility="gone" />
-        <Button
+        <com.google.android.material.button.MaterialButton
+            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+            android:background="@color/colorPrimaryDark"
+            android:layout_margin="5dp"
             android:id="@+id/btnBack"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Kembali"
             android:visibility="gone" />
 
-        <Button
+        <com.google.android.material.button.MaterialButton
+            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+            android:background="@color/colorPrimaryDark"
+            android:layout_margin="5dp"
             android:id="@+id/btn_detect"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

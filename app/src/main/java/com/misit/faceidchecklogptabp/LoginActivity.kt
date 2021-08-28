@@ -35,6 +35,7 @@ import com.misit.faceidchecklogptabp.Utils.PopupUtil
 import com.misit.faceidchecklogptabp.Utils.PrefsUtil
 import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.activity_login.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import retrofit2.Call
@@ -160,7 +161,7 @@ class LoginActivity : AppCompatActivity(),View.OnClickListener {
     fun loginSubmit(userIn:String,passIn:String){
         PopupUtil.showLoading(this@LoginActivity,"Logging In","Please Wait")
         val apiEndPoint = ApiClient.getClient(this)!!.create(ApiEndPoint::class.java)
-        GlobalScope.launch {
+        GlobalScope.launch(Dispatchers.Main) {
             val call = apiEndPoint.loginCheckloginCorutine(
                 userIn,
                 passIn,
@@ -190,9 +191,9 @@ class LoginActivity : AppCompatActivity(),View.OnClickListener {
                                     usrResponse.dataLogin?.show_absen)
                             Toasty.success(this@LoginActivity,"Login Success ",Toasty.LENGTH_LONG).show()
                             val intents = Intent(this@LoginActivity,HomeActivity::class.java)
-                            finish()
-                            startActivity(intents)
+                            this@LoginActivity.startActivity(intents)
                             PopupUtil.dismissDialog()
+                            finish()
 
                         }else{
                             Toasty.error(this@LoginActivity,"Username Or Password Wrong!",Toasty.LENGTH_SHORT).show()
