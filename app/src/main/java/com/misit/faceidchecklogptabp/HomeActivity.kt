@@ -183,7 +183,7 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
     }
     //    androidToken
     override fun onResume() {
-//        absenList?.clear()
+        absenList?.clear()
         loadAbsenTigaHari()
         cekLokasi()
         handler.post(updateClock)
