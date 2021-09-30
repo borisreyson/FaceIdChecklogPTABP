@@ -231,64 +231,73 @@ class PulangActivity : AppCompatActivity() {
         var lng = RequestBody.create(MultipartBody.FORM, LNG)
         var lupa_absen = RequestBody.create(MultipartBody.FORM,"")
         var face_id = RequestBody.create(MultipartBody.FORM, id.toString())
-        //API
-        val apiEndPoint = ApiClient.getClient(this)!!.create(ApiEndPoint::class.java)
-        val call = apiEndPoint.uploadImage(
-            fileToUpload,
-            niK,
-            tanggal,
-            jam_absen,
-            status_absen,
-            face_id,lupa_absen,lat,lng)
-        call?.enqueue(object : Callback<ImageResponse?> {
-            override fun onFailure(call: Call<ImageResponse?>, t: Throwable) {
+        try {
+            //API
+            val apiEndPoint = ApiClient.getClient(this)!!.create(ApiEndPoint::class.java)
+            val call = apiEndPoint.uploadImage(
+                fileToUpload,
+                niK,
+                tanggal,
+                jam_absen,
+                status_absen,
+                face_id,lupa_absen,lat,lng)
+            call?.enqueue(object : Callback<ImageResponse?> {
+                override fun onFailure(call: Call<ImageResponse?>, t: Throwable) {
 
-            }
-            override fun onResponse(
-                call: Call<ImageResponse?>,
-                response: Response<ImageResponse?>
-            ) {
-                val imageResponse = response.body()
-                if (imageResponse != null) {
-                    Log.d("Tidak dikenal",imageResponse.tidak_dikenal.toString())
-                    if(imageResponse.tidak_dikenal!=null) {
-                        if (imageResponse.tidak_dikenal) {
+                }
+                override fun onResponse(
+                    call: Call<ImageResponse?>,
+                    response: Response<ImageResponse?>
+                ) {
+                    val imageResponse = response.body()
+                    if (imageResponse != null) {
+                        Log.d("Tidak dikenal",imageResponse.tidak_dikenal.toString())
+                        if(imageResponse.tidak_dikenal!=null) {
+                            if (imageResponse.tidak_dikenal) {
+                                file.delete()
+                                btn_detect.visibility = View.VISIBLE
+                                btnBack.visibility = View.GONE
+                                waitingDialog.dismiss()
+                                camera_view.start()
+                                graphic_overlay.clear()
+                                Toasty.info(
+                                    this@PulangActivity,
+                                    "Wajah Tidak Dikenal!",
+                                    Toasty.LENGTH_SHORT
+                                ).show()
+                            } else {
+                                file.delete()
+                                btn_detect.visibility = View.GONE
+                                btnBack.visibility = View.VISIBLE
+                                waitingDialog.dismiss()
+                                Toasty.info(
+                                    this@PulangActivity,
+                                    "Wajah di kenali, Absen di daftar!",
+                                    Toasty.LENGTH_SHORT
+                                ).show()
+                            }
+                        }else{
                             file.delete()
-                            btn_detect.visibility = View.VISIBLE
-                            btnBack.visibility = View.GONE
+                            btn_detect.visibility=View.VISIBLE
+                            btnBack.visibility=View.GONE
                             waitingDialog.dismiss()
                             camera_view.start()
                             graphic_overlay.clear()
-                            Toasty.info(
-                                this@PulangActivity,
-                                "Wajah Tidak Dikenal!",
-                                Toasty.LENGTH_SHORT
-                            ).show()
-                        } else {
-                            file.delete()
-                            btn_detect.visibility = View.GONE
-                            btnBack.visibility = View.VISIBLE
-                            waitingDialog.dismiss()
-                            Toasty.info(
-                                this@PulangActivity,
-                                "Wajah di kenali, Absen di daftar!",
-                                Toasty.LENGTH_SHORT
-                            ).show()
-                        }
-                    }else{
-                        file.delete()
-                        btn_detect.visibility=View.VISIBLE
-                        btnBack.visibility=View.GONE
-                        waitingDialog.dismiss()
-                        camera_view.start()
-                        graphic_overlay.clear()
-                        Toasty.info(this@PulangActivity,"Wajah Tidak Dikenal!", Toasty.LENGTH_SHORT).show()
+                            Toasty.info(this@PulangActivity,"Wajah Tidak Dikenal!", Toasty.LENGTH_SHORT).show()
 
+                        }
                     }
                 }
-            }
-        })
-        //API
+            })
+            //API
+        }catch (e:Exception){
+            Log.e("ErrorPulang","Cek Pulang :${e.message}")
+            saveImageToInternalStorage(bitmap,id)
+        }catch (e:InterruptedException){
+            Log.e("ErrorPulang","Cek Pulang :${e.message}")
+            saveImageToInternalStorage(bitmap,id)
+        }
+
         return uri
     }
 

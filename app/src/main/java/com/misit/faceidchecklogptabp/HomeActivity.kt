@@ -169,17 +169,26 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
     }
     //    androidToken
     fun androidToken(){
-        FirebaseMessaging.getInstance().isAutoInitEnabled = true
-        FirebaseMessaging.getInstance().token
-            .addOnCompleteListener(OnCompleteListener { task ->
-                if (!task.isSuccessful) {
-                    Toast.makeText(this@HomeActivity,"Error : $task.exception", Toast.LENGTH_SHORT).show()
+        try {
 
-                    return@OnCompleteListener
-                }
-                // Get new Instance ID token
-                android_token = task.result
-            })
+            FirebaseMessaging.getInstance().isAutoInitEnabled = true
+            FirebaseMessaging.getInstance().token
+                .addOnCompleteListener(OnCompleteListener { task ->
+                    if (!task.isSuccessful) {
+                        Toast.makeText(this@HomeActivity,"Error : $task.exception", Toast.LENGTH_SHORT).show()
+
+                        return@OnCompleteListener
+                    }
+                    // Get new Instance ID token
+                    android_token = task.result
+                })
+        }catch (e:Exception){
+            Log.e("HomeError","Cek Token :${e.message}")
+            androidToken()
+        }catch (e:InterruptedException){
+            Log.e("HomeError","Cek Token :${e.message}")
+            androidToken()
+        }
     }
     //    androidToken
     override fun onResume() {
@@ -256,10 +265,11 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
 //            handler.postDelayed(r,1000)
         }
     fun cekLokasi(){
-        tvJam.text =""
-        val apiEndPoint = ApiClient.getClient(this@HomeActivity)?.create(ApiEndPoint::class.java)
-        GlobalScope.launch {
-            val call = apiEndPoint?.tokenCorutine(NIK,"faceId",android_token)
+        try {
+            tvJam.text =""
+            val apiEndPoint = ApiClient.getClient(this@HomeActivity)?.create(ApiEndPoint::class.java)
+            GlobalScope.launch {
+                val call = apiEndPoint?.tokenCorutine(NIK,"faceId",android_token)
                 if (call != null) {
                     if(call.isSuccessful)
                     {
@@ -280,9 +290,14 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
                 }else{
                     cekLokasi()
                 }
+            }
+        }catch (e:Exception){
+            Log.e("HomeError","Cek Lokasi :${e.message}")
+            cekLokasi()
+        }catch (e:InterruptedException){
+            Log.e("HomeError","Cek Lokasi :${e.message}")
+            cekLokasi()
         }
-
-
     }
     fun koneksiInActive(){
         AlertDialog.Builder(this)
@@ -296,137 +311,163 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
             .show()
     }
     fun cekFaceID(){
-        val apiEndPoint = ApiClient.getClient(this)?.create(ApiEndPoint::class.java)
-        GlobalScope.launch {
-            val call = apiEndPoint?.dirInfoCorutine(NIK!!)
-            if(call!=null){
-                if(call.isSuccessful){
-                    val respon = call.body()
-                    if(respon!=null){
-                        if(respon.folder!=null){
-                            if(respon.folder){
+        try {
+            val apiEndPoint = ApiClient.getClient(this)?.create(ApiEndPoint::class.java)
+            GlobalScope.launch {
+                val call = apiEndPoint?.dirInfoCorutine(NIK!!)
+                if(call!=null){
+                    if(call.isSuccessful){
+                        val respon = call.body()
+                        if(respon!=null){
+                            if(respon.folder!=null){
+                                if(respon.folder){
 //                        btnFaceFalse.visibility=View.GONE
 //                        btnFaceTrue.visibility=View.VISIBLE
-                                PopupUtil.dismissDialog()
-                                loadAbsen()
+                                    PopupUtil.dismissDialog()
+                                    loadAbsen()
 //                        btnDaftarWajah.visibility=View.GONE
-                            }else{
+                                }else{
 //                        btnFaceFalse.visibility=View.VISIBLE
 //                        btnFaceTrue.visibility=View.GONE
-                                PopupUtil.dismissDialog()
-                                val intent = Intent(this@HomeActivity, DaftarWajahActivity::class.java)
-                                startActivity(intent)
+                                    PopupUtil.dismissDialog()
+                                    val intent = Intent(this@HomeActivity, DaftarWajahActivity::class.java)
+                                    startActivity(intent)
+                                }
+                            }else{
+                                cekFaceID()
                             }
+
                         }else{
                             cekFaceID()
                         }
-
                     }else{
                         cekFaceID()
                     }
                 }else{
                     cekFaceID()
                 }
-            }else{
-                cekFaceID()
             }
+        }catch (e:Exception){
+            cekFaceID()
+            Log.e("HomeError","Cek cekFaceID :${e.message}")
+        }catch (e:InterruptedException){
+            cekFaceID()
+            Log.e("HomeError","Cek cekFaceID :${e.message}")
         }
+
     }
     fun loadAbsen(){
-        val apiEndPoint = ApiClient.getClient(this)?.create(ApiEndPoint::class.java)
-        GlobalScope.launch(Dispatchers.Main){
-            val call = apiEndPoint?.lastAbsenCorutine(NIK!!)
-            if(call!=null){
-                if(call.isSuccessful){
-                    val response= call.body()
-                    if(response!=null){
-                        if(response.lastNew!=null){
-                            if(response.lastNew=="Masuk"){
-                                btnNewPulang.isEnabled=true
-                                btnNewMasuk.isEnabled=true
-                                btnNewMasuk.visibility=View.GONE
-                                btnNewPulang.visibility=View.VISIBLE
-                                tvNewMasuk.visibility=View.VISIBLE
-                                if(response.presensiMasuk!=null){
-                                    tvNewMasuk.text = "${response.presensiMasuk?.jam}"
-                                }
-                                tvNewPulang.visibility=View.GONE
-                            }else if(response.lastNew=="Pulang"){
+        try {
+            val apiEndPoint = ApiClient.getClient(this)?.create(ApiEndPoint::class.java)
+            GlobalScope.launch(Dispatchers.Main){
+                val call = apiEndPoint?.lastAbsenCorutine(NIK!!)
+                if(call!=null){
+                    if(call.isSuccessful){
+                        val response= call.body()
+                        if(response!=null){
+                            if(response.lastNew!=null){
+                                if(response.lastNew=="Masuk"){
+                                    btnNewPulang.isEnabled=true
+                                    btnNewMasuk.isEnabled=true
+                                    btnNewMasuk.visibility=View.GONE
+                                    btnNewPulang.visibility=View.VISIBLE
+                                    tvNewMasuk.visibility=View.VISIBLE
+                                    if(response.presensiMasuk!=null){
+                                        tvNewMasuk.text = "${response.presensiMasuk?.jam}"
+                                    }
+                                    tvNewPulang.visibility=View.GONE
+                                }else if(response.lastNew=="Pulang"){
 //                                chkMasuk.isChecked=true
 //                                chkPulang.isChecked=true
-                                btnNewPulang.isEnabled=true
-                                btnNewMasuk.isEnabled=true
-                                btnNewMasuk.visibility=View.VISIBLE
-                                btnNewPulang.visibility=View.GONE
-                                tvNewMasuk.visibility=View.GONE
-                                tvNewPulang.visibility=View.VISIBLE
-                                if(response.presensiMasuk!=null){
-                                    val presensiMasuk = response.presensiMasuk
-                                    if(presensiMasuk!=null){
-                                        tvNewMasuk.text = "${presensiMasuk?.jam}"
+                                    btnNewPulang.isEnabled=true
+                                    btnNewMasuk.isEnabled=true
+                                    btnNewMasuk.visibility=View.VISIBLE
+                                    btnNewPulang.visibility=View.GONE
+                                    tvNewMasuk.visibility=View.GONE
+                                    tvNewPulang.visibility=View.VISIBLE
+                                    if(response.presensiMasuk!=null){
+                                        val presensiMasuk = response.presensiMasuk
+                                        if(presensiMasuk!=null){
+                                            tvNewMasuk.text = "${presensiMasuk?.jam}"
+                                        }
                                     }
-                                }
-                                if(response.presensiPulang!=null){
-                                    tvNewPulang.text = "${response.presensiPulang?.jam}"
-                                }
+                                    if(response.presensiPulang!=null){
+                                        tvNewPulang.text = "${response.presensiPulang?.jam}"
+                                    }
 
-                            }else{
+                                }else{
 //                                chkMasuk.isChecked=false
 //                                chkPulang.isChecked=false
+                                    btnNewMasuk.isEnabled=true
+                                    btnNewPulang.isEnabled=true
+                                    btnNewMasuk.visibility=View.VISIBLE
+                                    btnNewPulang.visibility=View.VISIBLE
+                                    tvNewMasuk.visibility=View.GONE
+                                    tvNewPulang.visibility=View.GONE
+                                }
+                                if(btnNewMasuk.isEnabled==false){
+
+                                }
+                            }else{
+//                        chkMasuk.isChecked=false
+//                        chkPulang.isChecked=false
                                 btnNewMasuk.isEnabled=true
                                 btnNewPulang.isEnabled=true
                                 btnNewMasuk.visibility=View.VISIBLE
-                                btnNewPulang.visibility=View.VISIBLE
-                                tvNewMasuk.visibility=View.GONE
-                                tvNewPulang.visibility=View.GONE
-                            }
-                            if(btnNewMasuk.isEnabled==false){
-
+                                btnNewPulang.visibility=View.GONE
                             }
                         }else{
-//                        chkMasuk.isChecked=false
-//                        chkPulang.isChecked=false
-                            btnNewMasuk.isEnabled=true
-                            btnNewPulang.isEnabled=true
-                            btnNewMasuk.visibility=View.VISIBLE
-                            btnNewPulang.visibility=View.GONE
+                            loadAbsen()
                         }
                     }else{
                         loadAbsen()
                     }
-                }else{
-                    loadAbsen()
                 }
             }
+        }catch (e:Exception){
+            Log.e("HomeError","Cek loadAbsen :${e.message}")
+            loadAbsen()
+        }catch (e:InterruptedException){
+            Log.e("HomeError","Cek loadAbsen :${e.message}")
+            loadAbsen()
         }
+
     }
 
     private fun loadAbsenTigaHari() {
-        val apiEndPoint = ApiClient.getClient(this@HomeActivity)?.create(ApiEndPoint::class.java)
-        GlobalScope.launch(Dispatchers.Main)
-        {
-            val call = apiEndPoint?.absenTigaHari(NIK!!)
-            if(call!=null){
-                if(call.isSuccessful){
-                    val res = call.body()
-                    if(res!==null){
-                        if(res.absenTigaHari!=null){
-                            absenList?.addAll(res.absenTigaHari!!)
-                            adapter?.notifyDataSetChanged()
+        try {
+            val apiEndPoint = ApiClient.getClient(this@HomeActivity)?.create(ApiEndPoint::class.java)
+            GlobalScope.launch(Dispatchers.Main)
+            {
+                val call = apiEndPoint?.absenTigaHari(NIK!!)
+                if(call!=null){
+                    if(call.isSuccessful){
+                        val res = call.body()
+                        if(res!==null){
+                            if(res.absenTigaHari!=null){
+                                absenList?.addAll(res.absenTigaHari!!)
+                                adapter?.notifyDataSetChanged()
+                            }else{
+                                loadAbsenTigaHari()
+                            }
+                            Log.d("DATATIGAHARI",res.toString())
                         }else{
                             loadAbsenTigaHari()
                         }
-                        Log.d("DATATIGAHARI",res.toString())
                     }else{
                         loadAbsenTigaHari()
                     }
                 }else{
                     loadAbsenTigaHari()
                 }
-            }else{
-                loadAbsenTigaHari()
-            }
 
+            }
+        }catch (e:Exception){
+            Log.e("HomeError","Cek loadAbsenTigaHari :${e.message}")
+            loadAbsenTigaHari()
+        }catch (e:InterruptedException){
+            Log.e("HomeError","Cek loadAbsenTigaHari :${e.message}")
+            loadAbsenTigaHari()
         }
     }
     fun showDialogLupaMasuk(){
