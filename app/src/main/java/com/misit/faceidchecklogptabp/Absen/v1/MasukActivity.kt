@@ -75,6 +75,8 @@ class MasukActivity : AppCompatActivity() {
         LNG = PrefsUtil.getInstance()
             .getStringState(PrefsUtil.CURRENT_LNG,"")
 
+//        Toasty.info(this,"Lat : ${LAT}, Lng : ${LNG}",Toasty.LENGTH_LONG).show()
+
         mouthPos = ArrayList()
         leftEyPos = ArrayList()
 
@@ -82,10 +84,16 @@ class MasukActivity : AppCompatActivity() {
             .setMessage("Please Wait...")
             .setCancelable(false)
             .build()
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+//            getWindow().setFlags(
+//                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+//                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+//        }
         btn_detect.setOnClickListener{
             camera_view.captureImage()
             btn_detect.isEnabled=false
             btn_detect.isClickable=false
+            //btnSave.visibility= View.GONE
         }
 
         btn_active_camera.setOnClickListener {
@@ -99,6 +107,11 @@ class MasukActivity : AppCompatActivity() {
 
         niknya = intent.getStringExtra(NIK)
         btnToggle.setOnClickListener {
+//            if(camera_view.isFacingBack) {
+//                btnToggle.text="Camera Belakang"
+//            }else{
+//                btnToggle.text="Camera Depan"
+//            }
             camera_view.toggleFacing()
         }
 
@@ -147,24 +160,34 @@ class MasukActivity : AppCompatActivity() {
 
             override fun onAdFailedToLoad(errorCode : Int) {
                 Log.d("errorCode",errorCode.toString())
+                // Code to be executed when an ad request fails.
             }
 
             override fun onAdOpened() {
+                // Code to be executed when an ad opens an overlay that
+                // covers the screen.
             }
 
             override fun onAdClicked() {
+                // Code to be executed when the user clicks on an ad.
             }
 
             override fun onAdLeftApplication() {
+                // Code to be executed when the user has left the app.
             }
 
             override fun onAdClosed() {
+                // Code to be executed when the user is about to return
+                // to the app after tapping on an ad.
             }
         }
 
+//        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
         if(camera_view.isFacingBack){
             camera_view.toggleFacing()
+//            btnToggle.text="Camera Belakang"
         }else{
+//            btnToggle.text="Camera Depan"
         }
     }
     override fun onPause() {
@@ -282,6 +305,29 @@ class MasukActivity : AppCompatActivity() {
             }
     }
 
+//    fun runFaceDetector(bitmap: Bitmap?){
+//        val image = FirebaseVisionImage.fromBitmap(bitmap!!)
+//
+//        val options  = FirebaseVisionFaceDetectorOptions.Builder()
+//            .setPerformanceMode(
+//                FirebaseVisionFaceDetectorOptions.ACCURATE)
+//            .setLandmarkMode(FirebaseVisionFaceDetectorOptions.ALL_LANDMARKS)
+//            .setClassificationMode(
+//                FirebaseVisionFaceDetectorOptions.ALL_CLASSIFICATIONS)
+//            .setContourMode(FirebaseVisionFaceDetectorOptions.ALL_CONTOURS)
+//            .enableTracking()
+//            .build()
+//        val detector = FirebaseVision.getInstance().getVisionFaceDetector(options)
+//
+//        detector.detectInImage(image)
+//            .addOnSuccessListener {
+////                    result -> progressResult(result)
+//            }
+//            .addOnFailureListener{
+//                    e -> Toast.makeText(this@MasukActivity,e.message, Toast.LENGTH_SHORT).show()
+//            }
+//
+//    }
 fun progressResult(result:List<Face>){
     var count=0
     var id=0

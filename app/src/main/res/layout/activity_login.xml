@@ -40,7 +40,6 @@
                 android:id="@+id/tilUsername"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_margin="10dp">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -54,7 +53,6 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:id="@+id/tilPassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -70,16 +68,13 @@
                     android:maxLines="1" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <com.google.android.material.button.MaterialButton
-                style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+            <Button
                 android:id="@+id/loginBtn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
-                android:layout_gravity="center_horizontal"
-                android:background="@color/colorPrimaryDark"
+                android:background="@drawable/btn_bg"
                 android:text="Masuk"
-                android:gravity="center_horizontal|center_vertical"
                 android:textAllCaps="false"
                 android:textColor="@color/white" />
         </LinearLayout>

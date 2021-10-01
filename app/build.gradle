@@ -14,8 +14,8 @@ android {
         applicationId "com.misit.faceidchecklogptabp"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 16
-        versionName "2.6"
+        versionCode 22
+        versionName "3.2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

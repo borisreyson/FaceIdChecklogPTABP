@@ -241,6 +241,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun loadFirst() {
+        Log.v("FaceId", android_token)
         if (PrefsUtil.getInstance().getBooleanState(PrefsUtil.IS_LOGGED_IN, false)) {
             var nik = PrefsUtil.getInstance().getStringState(PrefsUtil.NIK, "")
             val apiEndPoint = ApiClient.getClient(this)?.create(ApiEndPoint::class.java)
