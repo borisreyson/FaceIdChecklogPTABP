@@ -231,28 +231,43 @@ class MasukActivity : AppCompatActivity() {
         var lat = RequestBody.create(MultipartBody.FORM, LAT)
         var lng = RequestBody.create(MultipartBody.FORM, LNG)
         var fileToUpload = MultipartBody.Part.createFormData("fileToUpload",file.name,fileUri)
-
-        //API
-        val apiEndPoint = ApiClient.getClient(this)!!.create(ApiEndPoint::class.java)
-        val call = apiEndPoint.uploadImage(
-            fileToUpload,
-            niK,
-            tanggal,
-            jam_absen,
-            status_absen,
-            idnya,lupa_absen,lat,lng)
-        call.enqueue(object : Callback<ImageResponse?> {
-            override fun onFailure(call: Call<ImageResponse?>, t: Throwable) {
-                Toasty.info(this@MasukActivity,"$t", Toasty.LENGTH_SHORT).show()
-            }
-            override fun onResponse(
-                call: Call<ImageResponse?>,
-                response: Response<ImageResponse?>
-            ) {
-                val imageResponse = response.body()
-                if (imageResponse != null) {
-                    if(imageResponse.tidak_dikenal!=null){
-                        if(imageResponse.tidak_dikenal){
+        try {
+            //API
+            val apiEndPoint = ApiClient.getClient(this)!!.create(ApiEndPoint::class.java)
+            val call = apiEndPoint.uploadImage(
+                fileToUpload,
+                niK,
+                tanggal,
+                jam_absen,
+                status_absen,
+                idnya,lupa_absen,lat,lng)
+            call.enqueue(object : Callback<ImageResponse?> {
+                override fun onFailure(call: Call<ImageResponse?>, t: Throwable) {
+                    Toasty.info(this@MasukActivity,"$t", Toasty.LENGTH_SHORT).show()
+                }
+                override fun onResponse(
+                    call: Call<ImageResponse?>,
+                    response: Response<ImageResponse?>
+                ) {
+                    val imageResponse = response.body()
+                    if (imageResponse != null) {
+                        if(imageResponse.tidak_dikenal!=null){
+                            if(imageResponse.tidak_dikenal){
+                                file.delete()
+                                btn_detect.visibility=View.VISIBLE
+                                btnBack.visibility=View.GONE
+                                waitingDialog.dismiss()
+                                camera_view.start()
+                                graphic_overlay.clear()
+                                Toasty.info(this@MasukActivity,"Wajah Tidak Dikenal!", Toasty.LENGTH_SHORT).show()
+                            }else{
+                                file.delete()
+                                btn_detect.visibility=View.GONE
+                                btnBack.visibility=View.VISIBLE
+                                waitingDialog.dismiss()
+                                Toasty.info(this@MasukActivity,"Wajah di kenali, Absen di daftar!", Toasty.LENGTH_SHORT).show()
+                            }
+                        }else{
                             file.delete()
                             btn_detect.visibility=View.VISIBLE
                             btnBack.visibility=View.GONE
@@ -260,26 +275,18 @@ class MasukActivity : AppCompatActivity() {
                             camera_view.start()
                             graphic_overlay.clear()
                             Toasty.info(this@MasukActivity,"Wajah Tidak Dikenal!", Toasty.LENGTH_SHORT).show()
-                        }else{
-                            file.delete()
-                            btn_detect.visibility=View.GONE
-                            btnBack.visibility=View.VISIBLE
-                            waitingDialog.dismiss()
-                            Toasty.info(this@MasukActivity,"Wajah di kenali, Absen di daftar!", Toasty.LENGTH_SHORT).show()
                         }
-                    }else{
-                        file.delete()
-                        btn_detect.visibility=View.VISIBLE
-                        btnBack.visibility=View.GONE
-                        waitingDialog.dismiss()
-                        camera_view.start()
-                        graphic_overlay.clear()
-                        Toasty.info(this@MasukActivity,"Wajah Tidak Dikenal!", Toasty.LENGTH_SHORT).show()
                     }
+                }
+            })
+        }catch (e:Exception){
+            Log.e("ErrorMasuk","Cek Masuk :${e.message}")
+            saveImageToInternalStorage(bitmap,id)
+        }catch (e:InterruptedException){
+            Log.e("ErrorMasuk","Cek Masuk :${e.message}")
+            saveImageToInternalStorage(bitmap,id)
+        }
 
-                   }
-            }
-        })
         //API
         return uri
     }

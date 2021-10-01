@@ -213,65 +213,74 @@ absenList?.addAll(absenListFilter!!)
         return super.onSupportNavigateUp()
     }
     private fun loadAbsen(hal:Int?,tanggal:String,absen:String) {
-        swipeRefreshLayout.isRefreshing=true
-        val apiEndPoint = ApiClient.getClient(this)!!.create(ApiEndPoint::class.java)
-        val call = apiEndPoint.listAllAbsen(tanggal,absen,hal)
-        call?.enqueue(object : Callback<AllAbsenResponse?> {
-            override fun onFailure(call: Call<AllAbsenResponse?>, t: Throwable) {
-                swipeRefreshLayout.isRefreshing=false
-            }
-            override fun onResponse(
-                call: Call<AllAbsenResponse?>,
-                response: Response<AllAbsenResponse?>
-            ) {
-                val absenRes = response.body()
-                if(absenRes!=null){
+        try {
+            swipeRefreshLayout.isRefreshing=true
+            val apiEndPoint = ApiClient.getClient(this)!!.create(ApiEndPoint::class.java)
+            val call = apiEndPoint.listAllAbsen(tanggal,absen,hal)
+            call?.enqueue(object : Callback<AllAbsenResponse?> {
+                override fun onFailure(call: Call<AllAbsenResponse?>, t: Throwable) {
                     swipeRefreshLayout.isRefreshing=false
-                    rvLoading.visibility= View.GONE
-                    loading=true
-                    if(absenList?.size==0){
-                        absenRes.data!!.forEach {
-                            if(it.status==absen){
-                                absenListFilter?.add(it!!)
-                                absenList?.add(it!!)
+                }
+                override fun onResponse(
+                    call: Call<AllAbsenResponse?>,
+                    response: Response<AllAbsenResponse?>
+                ) {
+                    val absenRes = response.body()
+                    if(absenRes!=null){
+                        swipeRefreshLayout.isRefreshing=false
+                        rvLoading.visibility= View.GONE
+                        loading=true
+                        if(absenList?.size==0){
+                            absenRes.data!!.forEach {
+                                if(it.status==absen){
+                                    absenListFilter?.add(it!!)
+                                    absenList?.add(it!!)
+                                }
                             }
-                        }
-                        adapter?.notifyDataSetChanged()
-                    }else{
-                        curentPosition = (rvListAbsen.layoutManager as GridLayoutManager).findLastVisibleItemPosition()
-                        absenRes.data!!.forEach {
-                            if(it.status==absen){
-                                absenListFilter?.add(it!!)
-                                absenList?.add(it!!)
+                            adapter?.notifyDataSetChanged()
+                        }else{
+                            curentPosition = (rvListAbsen.layoutManager as GridLayoutManager).findLastVisibleItemPosition()
+                            absenRes.data!!.forEach {
+                                if(it.status==absen){
+                                    absenListFilter?.add(it!!)
+                                    absenList?.add(it!!)
+                                }
                             }
+                            adapter?.notifyDataSetChanged()
                         }
-                        adapter?.notifyDataSetChanged()
-                    }
-                    rvListAbsen.addOnScrollListener(object: RecyclerView.OnScrollListener(){
-                        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                            super.onScrolled(recyclerView, dx, dy)
-                            if(dy>0){
-                                visibleItem = (recyclerView.layoutManager as GridLayoutManager).childCount
-                                total=(recyclerView.layoutManager as GridLayoutManager).itemCount
-                                pastVisibleItem=(recyclerView.layoutManager as GridLayoutManager).findFirstVisibleItemPosition()
-                                if(loading) {
-                                    if ((visibleItem + pastVisibleItem) >= total) {
-                                        //Toasty.info(this@LihatAbsenActivity,visibleItem.toString(),Toasty.LENGTH_SHORT).show()
-                                        //rvLoading.visibility=View.VISIBLE
-                                        if (page < absenRes.lastPage!!){
-                                            loading = false
-                                            page++
-                                            loadAbsen(page, TANGGAL, ABSEN)
+                        rvListAbsen.addOnScrollListener(object: RecyclerView.OnScrollListener(){
+                            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                                super.onScrolled(recyclerView, dx, dy)
+                                if(dy>0){
+                                    visibleItem = (recyclerView.layoutManager as GridLayoutManager).childCount
+                                    total=(recyclerView.layoutManager as GridLayoutManager).itemCount
+                                    pastVisibleItem=(recyclerView.layoutManager as GridLayoutManager).findFirstVisibleItemPosition()
+                                    if(loading) {
+                                        if ((visibleItem + pastVisibleItem) >= total) {
+                                            //Toasty.info(this@LihatAbsenActivity,visibleItem.toString(),Toasty.LENGTH_SHORT).show()
+                                            //rvLoading.visibility=View.VISIBLE
+                                            if (page < absenRes.lastPage!!){
+                                                loading = false
+                                                page++
+                                                loadAbsen(page, TANGGAL, ABSEN)
+                                            }
                                         }
                                     }
                                 }
                             }
-                        }
-                    })
+                        })
+                    }
                 }
-            }
 
-        })
+            })
+        }catch (e:Exception){
+            Log.e("ErrorListAbsen","Cek loadAbsen :${e.message}")
+            loadAbsen(page, TANGGAL, ABSEN)
+        }catch (e:InterruptedException){
+            Log.e("ErrorListAbsen","Cek loadAbsen :${e.message}")
+            loadAbsen(page, TANGGAL, ABSEN)
+        }
+
     }
     override fun onItemClick(
         nik: String?,

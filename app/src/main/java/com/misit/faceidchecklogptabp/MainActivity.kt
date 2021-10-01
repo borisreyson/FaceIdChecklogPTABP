@@ -38,6 +38,7 @@ import com.misit.faceidchecklogptabp.Response.MainResponse.FirstLoadResponse
 import com.misit.faceidchecklogptabp.Utils.PrefsUtil
 import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import retrofit2.Call
@@ -246,21 +247,25 @@ class MainActivity : AppCompatActivity() {
             var nik = PrefsUtil.getInstance().getStringState(PrefsUtil.NIK, "")
             val apiEndPoint = ApiClient.getClient(this)?.create(ApiEndPoint::class.java)
             GlobalScope.launch {
-                val call = apiEndPoint?.tokenCorutine(nik, "faceId", android_token)
-                if (call != null) {
-                    if (call.isSuccessful) {
-                        val response = call.body()
-                        if (response != null) {
-                            Log.v("FaceId", "Data" + response.toString())
-                            if (response.absensi == null) {
-                                loadPage("Login")
-                            } else {
-                                if (response.absensi.phoneToken == android_token) {
-                                    loadPage("Index")
+                try {
+                    val call = apiEndPoint?.tokenCorutine(nik, "faceId", android_token)
+                    if (call != null) {
+                        if (call.isSuccessful) {
+                            val response = call.body()
+                            if (response != null) {
+                                Log.v("FaceId", "Data" + response.toString())
+                                if (response.absensi == null) {
+                                    loadPage("Login")
                                 } else {
-                                    loadPage("Index")
-                                }
+                                    if (response.absensi.phoneToken == android_token) {
+                                        loadPage("Index")
+                                    } else {
+                                        loadPage("Index")
+                                    }
 
+                                }
+                            } else {
+                                loadFirst()
                             }
                         } else {
                             loadFirst()
@@ -268,7 +273,13 @@ class MainActivity : AppCompatActivity() {
                     } else {
                         loadFirst()
                     }
-                } else {
+
+
+                } catch (e: Exception) {
+                    Log.e("MainError","${e.message}")
+                    loadFirst()
+                } catch (e: InterruptedException) {
+                    Log.e("MainError","${e.message}")
                     loadFirst()
                 }
             }
