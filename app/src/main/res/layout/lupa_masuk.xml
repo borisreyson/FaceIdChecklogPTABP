@@ -77,6 +77,7 @@ app:cardElevation="10dp">
             android:layout_height="1dp"
             android:background="@color/red_smooth"/>
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_marginTop="20dp"
             android:id="@+id/tilTanggalLupaMasuk"
             android:layout_width="match_parent"
@@ -96,18 +97,22 @@ app:cardElevation="10dp">
             android:layout_height="wrap_content"
             android:orientation="horizontal">
         <Button
+            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
             android:layout_margin="5dp"
             android:text="Lupa Absen Masuk"
-            android:background="@drawable/masuk"
+            android:backgroundTint="@color/colorPrimaryDark"
             android:textColor="@color/white"
             android:layout_width="0dp"
+            android:textSize="10sp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:id="@+id/btnLupaAbsenMasuk"/>
         <Button
+            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
             android:layout_margin="5dp"
             android:text="Batal"
-            android:background="@drawable/pulang"
+            android:textSize="10sp"
+            android:backgroundTint="@color/red_smooth"
             android:textColor="@color/white"
             android:layout_width="0dp"
             android:layout_weight="1"

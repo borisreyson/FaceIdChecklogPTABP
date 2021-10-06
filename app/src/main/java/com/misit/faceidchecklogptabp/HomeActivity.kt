@@ -28,6 +28,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.chaquo.python.Python
+import com.chaquo.python.android.AndroidPlatform
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
@@ -42,6 +44,7 @@ import com.misit.faceidchecklogptabp.Adapter.Last3DaysAdapter
 import com.misit.faceidchecklogptabp.Response.AbsenTigaHariItem
 import com.misit.faceidchecklogptabp.Utils.PopupUtil
 import com.misit.faceidchecklogptabp.Utils.PrefsUtil
+import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.android.synthetic.main.activity_home.tvJam
 import kotlinx.android.synthetic.main.activity_home.tvNama
@@ -131,6 +134,13 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
         btnListAllAbsen.setOnClickListener(this)
         lpAbsenMasuk.setOnClickListener(this)
         lpAbsenPulang.setOnClickListener(this)
+        if (!Python.isStarted()) {
+            Python.start(AndroidPlatform(this))
+        }
+        val python = Python.getInstance()
+        val pythonFile = python.getModule("helloworldscript")
+        val helloWorldString = pythonFile.callAttr("helloworld")
+        Toasty.info(this@HomeActivity,"${helloWorldString}",Toasty.LENGTH_LONG).show()
     }
 
     override fun onClick(v: View?) {
