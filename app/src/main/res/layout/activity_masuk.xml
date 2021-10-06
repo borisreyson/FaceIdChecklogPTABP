@@ -7,6 +7,7 @@ android:layout_height="match_parent"
 tools:context=".Absen.v1.MasukActivity">
 
     <RelativeLayout
+        android:background="@color/transparent"
         android:id="@+id/R_Bottom"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -15,12 +16,18 @@ tools:context=".Absen.v1.MasukActivity">
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
         <Button
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
             android:id="@+id/btn_active_camera"
+            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Scan Ulang"
-            android:visibility="gone" />
+            android:visibility="visible" />
         <Button
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
             android:id="@+id/btnBack"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -28,7 +35,11 @@ tools:context=".Absen.v1.MasukActivity">
             android:visibility="gone" />
 
         <Button
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
             android:id="@+id/btn_detect"
+            android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Scan Wajah"

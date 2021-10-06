@@ -9,7 +9,6 @@ import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.location.Location
-import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
@@ -29,6 +28,9 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.gms.ads.AdListener
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.material.textfield.TextInputEditText
@@ -37,10 +39,7 @@ import com.misit.abpenergy.api.ApiClient
 import com.misit.abpenergy.api.ApiEndPoint
 import com.misit.faceidchecklogptabp.Absen.v1.*
 import com.misit.faceidchecklogptabp.Adapter.Last3DaysAdapter
-import com.misit.faceidchecklogptabp.Response.Absen.DirInfoResponse
-import com.misit.faceidchecklogptabp.Response.AbsenLastResponse
 import com.misit.faceidchecklogptabp.Response.AbsenTigaHariItem
-import com.misit.faceidchecklogptabp.Response.MainResponse.FirstLoadResponse
 import com.misit.faceidchecklogptabp.Utils.PopupUtil
 import com.misit.faceidchecklogptabp.Utils.PrefsUtil
 import kotlinx.android.synthetic.main.activity_home.*
@@ -52,9 +51,6 @@ import kotlinx.android.synthetic.main.lupa_pulang.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
@@ -71,6 +67,7 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
     private var app_version : String?=""
     private var mLocationManager : LocationManager?=null
     private var mLocation : Location?= null
+    lateinit var mAdView : AdView
     lateinit var viewPassword: View
     lateinit var alertDialog: AlertDialog
     private var android_token : String?=null
@@ -107,6 +104,9 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
             NAMA = PrefsUtil.getInstance().getStringState(PrefsUtil.NAMA_LENGKAP,"")
             NIK = PrefsUtil.getInstance().getStringState(PrefsUtil.NIK,"")
             SHOW_ABSEN = PrefsUtil.getInstance().getStringState(PrefsUtil.SHOW_ABSEN,"")
+        }else{
+            startActivity(Intent(this@HomeActivity,MainActivity::class.java))
+            finish()
         }
         tipe = intent.getStringExtra(TIPE)
         if(tipe=="terlambat"){
@@ -183,6 +183,39 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
     }
     //    androidToken
     override fun onResume() {
+        MobileAds.initialize(this) {}
+        mAdView = findViewById(R.id.adViewIndex)
+        val adRequest = AdRequest.Builder().build()
+        mAdView.loadAd(adRequest)
+
+        mAdView.adListener = object: AdListener() {
+            override fun onAdLoaded() {
+                // Code to be executed when an ad finishes loading.
+            }
+
+            override fun onAdFailedToLoad(errorCode : Int) {
+                Log.d("errorCode",errorCode.toString())
+                // Code to be executed when an ad request fails.
+            }
+
+            override fun onAdOpened() {
+                // Code to be executed when an ad opens an overlay that
+                // covers the screen.
+            }
+
+            override fun onAdClicked() {
+                // Code to be executed when the user clicks on an ad.
+            }
+
+            override fun onAdLeftApplication() {
+                // Code to be executed when the user has left the app.
+            }
+
+            override fun onAdClosed() {
+                // Code to be executed when the user is about to return
+                // to the app after tapping on an ad.
+            }
+        }
         absenList?.clear()
         loadAbsenTigaHari()
         cekLokasi()

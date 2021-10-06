@@ -44,7 +44,7 @@
         app:cardElevation="20dp"
         app:cardCornerRadius="10dp"
         android:layout_width="wrap_content"
-        android:layout_height="180dp"
+        android:layout_height="120dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
@@ -59,16 +59,15 @@
                 android:paddingTop="5dp"
                 android:paddingBottom="5dp"
                 android:gravity="center"
-                android:layout_weight="1.94"
                 android:orientation="vertical"
                 android:layout_width="match_parent"
-                android:layout_height="0dp">
+                android:layout_height="wrap_content">
                 <TextView
                     android:id="@+id/tvJam"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="07:00:00"
-                    android:textSize="40sp"
+                    android:textSize="30sp"
                     android:gravity="center"
                     android:textColor="#0022FF"
                     />
@@ -84,16 +83,14 @@
             <View
                 android:layout_gravity="center_horizontal"
                 android:layout_width="200dp"
-                android:layout_height="0dp"
-                android:layout_weight="0.02"
-
+                android:layout_height="1dp"
                 android:background="@color/borderSmoth"/>
             <LinearLayout
-                android:padding="5dp"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
                 android:orientation="horizontal"
-                android:layout_weight="0.94"
                 android:layout_width="match_parent"
-                android:layout_height="0dp">
+                android:layout_height="wrap_content">
                 <com.google.android.material.button.MaterialButton
                     style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
                     android:id="@+id/btnNewMasuk"
@@ -101,6 +98,7 @@
                     android:textColor="@color/white"
                     android:drawableTint="@color/white"
                     android:text="Masuk"
+                    android:textSize="12sp"
                     android:layout_marginRight="5dp"
                     android:layout_weight="0.90"
                     android:layout_width="0dp"
@@ -136,6 +134,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="5dp"
+                    android:textSize="12sp"
                     android:backgroundTint="#ED2124"
                     android:drawableLeft="@drawable/wajah_ic"/>
                 <TextView
@@ -159,7 +158,24 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:layout_marginTop="150dp">
+        android:layout_marginTop="80dp">
+        <LinearLayout
+            android:id="@+id/lnHome"
+            android:backgroundTint="@color/white"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <com.google.android.gms.ads.AdView
+                android:id="@+id/adViewIndex"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                app:adSize="BANNER"
+                app:adUnitId="@string/APP_ADMOB_ID_BANNER"
+                app:layout_constraintBottom_toBottomOf="@+id/relativeLayout2"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"/>
+        </LinearLayout>
         <TextView
             android:textStyle="bold"
             android:textColor="@color/colorPrimaryDark"
@@ -167,16 +183,25 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Absen 3 hari terakhir"/>
-        <ScrollView
-            android:id="@+id/scrlLast"
-            android:padding="10dp"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-        <androidx.recyclerview.widget.RecyclerView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/rvLast3Day"/>
-        </ScrollView>
+            <ScrollView
+                android:id="@+id/scrlLast"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:padding="10dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvLast3Day"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+            </ScrollView>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </LinearLayout>
 
@@ -184,6 +209,8 @@
         android:id="@+id/btnFloatHistory"
         style="@style/Widget.MaterialComponents.FloatingActionButton"
         android:text="Lihat Absen"
+        android:textSize="10sp"
+        android:padding="0dp"
         android:backgroundTint="@color/colorPrimaryDark"
         android:textColor="@color/white"
         app:icon="@drawable/ic_baseline_history_24"
@@ -208,6 +235,8 @@
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="80dp"
         app:iconTint="@color/white"
+        android:textSize="10sp"
+        android:padding="0dp"
         android:layout_marginEnd="20dp"/>
 
     <com.getbase.floatingactionbutton.FloatingActionsMenu

@@ -22,6 +22,9 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            ndk {
+                debugSymbolLevel 'SYMBOL_TABLE'
+            }
         }
     }
 
@@ -35,6 +38,8 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    ndkVersion '23.0.7599858'
+
 }
 
 dependencies {
@@ -136,5 +141,5 @@ dependencies {
     implementation 'com.google.android.material:material:1.5.0-alpha02'
     implementation 'com.getbase:floatingactionbutton:1.10.1'
     implementation 'com.facebook.shimmer:shimmer:0.5.0'
-
+//    implementation 'org.jetbrains:kotlin-numpy:0.1.5'
 }

@@ -84,7 +84,11 @@ class MainActivity : AppCompatActivity() {
         Glide.with(this).load(R.drawable.abp).into(imageView)
 
         tvVersionCode.text = " V.${app_version}"
-        updateProgress()
+        if (PrefsUtil.getInstance().getBooleanState(PrefsUtil.IS_LOGGED_IN, false)) {
+            updateProgress()
+        }else{
+            loadPage("Login")
+        }
     }
 
     override fun onRequestPermissionsResult(
