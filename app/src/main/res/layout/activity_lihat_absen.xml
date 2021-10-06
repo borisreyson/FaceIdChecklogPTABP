@@ -14,10 +14,12 @@
         <LinearLayout
             android:id="@+id/ln01"
             android:layout_width="match_parent"
+            android:backgroundTint="@color/smoke"
             android:layout_height="0dp"
             android:layout_weight="1"
             android:orientation="vertical">
             <androidx.recyclerview.widget.RecyclerView
+                android:backgroundTint="@color/smoke"
                 android:id="@+id/rvListAbsen"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />

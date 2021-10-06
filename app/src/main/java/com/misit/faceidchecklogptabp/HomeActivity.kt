@@ -134,13 +134,13 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
         btnListAllAbsen.setOnClickListener(this)
         lpAbsenMasuk.setOnClickListener(this)
         lpAbsenPulang.setOnClickListener(this)
-        if (!Python.isStarted()) {
-            Python.start(AndroidPlatform(this))
-        }
-        val python = Python.getInstance()
-        val pythonFile = python.getModule("helloworldscript")
-        val helloWorldString = pythonFile.callAttr("helloworld")
-        Toasty.info(this@HomeActivity,"${helloWorldString}",Toasty.LENGTH_LONG).show()
+//        if (!Python.isStarted()) {
+//            Python.start(AndroidPlatform(this))
+//        }
+//        val python = Python.getInstance()
+//        val pythonFile = python.getModule("helloworldscript")
+//        val helloWorldString = pythonFile.callAttr("helloworld")
+//        Toasty.info(this@HomeActivity,"${helloWorldString}",Toasty.LENGTH_LONG).show()
     }
 
     override fun onClick(v: View?) {

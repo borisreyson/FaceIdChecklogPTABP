@@ -35,6 +35,7 @@ import com.misit.faceidchecklogptabp.Response.AbpResponse
 import com.misit.faceidchecklogptabp.Response.AndroidTokenResponse
 import com.misit.faceidchecklogptabp.Response.AppVersionResponse
 import com.misit.faceidchecklogptabp.Response.MainResponse.FirstLoadResponse
+import com.misit.faceidchecklogptabp.Utils.ConfigUtil
 import com.misit.faceidchecklogptabp.Utils.PrefsUtil
 import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.activity_main.*
@@ -65,7 +66,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
+        dirInit(this@MainActivity)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             window.decorView.apply {
                 systemUiVisibility =
@@ -91,6 +92,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun dirInit(c:Context){
+        ConfigUtil.deleteInABPIMAGES(c,"ABP_IMAGES")
+    }
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,

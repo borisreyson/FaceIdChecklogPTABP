@@ -276,4 +276,24 @@
             app:fab_colorPressed="@color/red_smooth"
             app:fab_title="Lupa Absen Pulang" />
     </com.getbase.floatingactionbutton.FloatingActionsMenu>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="5dp"
+        app:cardCornerRadius="50dp"
+        app:cardElevation="10dp"
+        android:outlineSpotShadowColor="@color/white"
+        android:outlineAmbientShadowColor="@color/white"
+        android:layout_marginEnd="12dp">
+
+        <ImageView
+            android:layout_margin="12sp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:backgroundTint="@color/white"
+            android:src="@drawable/abp_logo" />
+    </androidx.cardview.widget.CardView>
 </RelativeLayout>
