@@ -15,11 +15,7 @@ import java.util.*
 
 object ApiClient{
     private var BASE_URL= "http://10.10.3.13"
-//    private var BASE_URL= "https://abpjobsite.com"
     private var retrofit : Retrofit? = null
-//    fun loadURL(base_url:String){
-////        BASE_URL = base_url
-//    }
     fun getClient(context: Context?):Retrofit?{
         if (retrofit==null){
             retrofit = Retrofit.Builder()
@@ -35,12 +31,7 @@ object ApiClient{
         val interceptor = HttpLoggingInterceptor()
         interceptor.level = HttpLoggingInterceptor.Level.BODY
         val cookieJar: ClearableCookieJar = PersistentCookieJar(SetCookieCache(),SharedPrefsCookiePersistor(context))
-        var okhttpClient = OkHttpClient.Builder()
-//        if(BuildConfig.DEBUG)
-//        {
-            okhttpClient
-                .addInterceptor(interceptor)
-//        }
+        var okhttpClient = OkHttpClient.Builder().addInterceptor(interceptor)
         return okhttpClient
             .cookieJar(cookieJar)
             .retryOnConnectionFailure(true)

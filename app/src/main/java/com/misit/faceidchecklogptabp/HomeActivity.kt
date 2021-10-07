@@ -3,8 +3,10 @@ package com.misit.faceidchecklogptabp
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -26,10 +28,9 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.chaquo.python.Python
-import com.chaquo.python.android.AndroidPlatform
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
@@ -42,9 +43,11 @@ import com.misit.abpenergy.api.ApiEndPoint
 import com.misit.faceidchecklogptabp.Absen.v1.*
 import com.misit.faceidchecklogptabp.Adapter.Last3DaysAdapter
 import com.misit.faceidchecklogptabp.Response.AbsenTigaHariItem
+import com.misit.faceidchecklogptabp.Utils.ConfigUtil
+import com.misit.faceidchecklogptabp.Utils.Constants
 import com.misit.faceidchecklogptabp.Utils.PopupUtil
 import com.misit.faceidchecklogptabp.Utils.PrefsUtil
-import es.dmoral.toasty.Toasty
+import com.misit.faceidchecklogptabp.services.LocationService
 import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.android.synthetic.main.activity_home.tvJam
 import kotlinx.android.synthetic.main.activity_home.tvNama
@@ -74,6 +77,7 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
     lateinit var viewPassword: View
     lateinit var alertDialog: AlertDialog
     private var android_token : String?=null
+    var tokenPassingReceiver : BroadcastReceiver?=null
     private var adapter: Last3DaysAdapter? = null
     private var absenList: MutableList<AbsenTigaHariItem>? = null
     lateinit var rvLast3Day :RecyclerView
@@ -108,7 +112,7 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
             NIK = PrefsUtil.getInstance().getStringState(PrefsUtil.NIK,"")
             SHOW_ABSEN = PrefsUtil.getInstance().getStringState(PrefsUtil.SHOW_ABSEN,"")
         }else{
-            startActivity(Intent(this@HomeActivity,MainActivity::class.java))
+            startActivity(Intent(this@HomeActivity, SplashActivity::class.java))
             finish()
         }
         tipe = intent.getStringExtra(TIPE)
@@ -141,6 +145,7 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
 //        val pythonFile = python.getModule("helloworldscript")
 //        val helloWorldString = pythonFile.callAttr("helloworld")
 //        Toasty.info(this@HomeActivity,"${helloWorldString}",Toasty.LENGTH_LONG).show()
+        reciever()
     }
 
     override fun onClick(v: View?) {
@@ -193,6 +198,10 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
     }
     //    androidToken
     override fun onResume() {
+        LocalBroadcastManager.getInstance(this@HomeActivity).registerReceiver(tokenPassingReceiver!!, IntentFilter(
+            Constants.APP_ID)
+        )
+
         MobileAds.initialize(this) {}
         mAdView = findViewById(R.id.adViewIndex)
         val adRequest = AdRequest.Builder().build()
@@ -546,6 +555,20 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
             now.get(Calendar.DAY_OF_MONTH)
         ).show()
     }
+
+    override fun onDestroy() {
+        var c = this@HomeActivity
+        var jvClass = LocationService::class.java
+        if(ConfigUtil.isMyServiceRunning(jvClass, c)){
+            LocalBroadcastManager.getInstance(c).unregisterReceiver(tokenPassingReceiver!!)
+            var intent = Intent(c, jvClass).apply {
+                this.action = Constants.SERVICE_STOP
+            }
+            c.stopService(intent)
+            Log.d("ServiceName", "${jvClass} Stop")
+        }
+        super.onDestroy()
+    }
     companion object{
         var TIPE = "TIPE"
         var PENGGUNA = "PENGGUNA"
@@ -557,5 +580,51 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
         var LAT = 0.0
         var LNG = 0.0
         var TANGGAL = "Selasa, 30 Maret 2021"
+    }
+    private fun reciever() {
+        tokenPassingReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                val bundle = intent.extras
+                if (bundle != null) {
+                    if (bundle.containsKey("fgLocation")) {
+                        val tokenData = bundle.getString("fgLocation")
+                        if(tokenData=="fgDone"){
+//                            LocalBroadcastManager.getInstance(this@HomeActivity).unregisterReceiver(tokenPassingReceiver!!)
+                            Log.d("ServiceName", tokenData)
+                        }
+                        if(tokenData=="fgUpdate"){
+//                            LocalBroadcastManager.getInstance(this@HomeActivity).unregisterReceiver(tokenPassingReceiver!!)
+                            Log.d("ServiceName", tokenData)
+                        }
+                    }
+
+                    if (bundle.containsKey("fgLat")) {
+                        val tokenData = bundle.getString("fgLat")
+                        Log.d("CurrentLocation","Lat : $tokenData")
+                    }
+                    if (bundle.containsKey("fgLng")) {
+                        val tokenData = bundle.getString("fgLng")
+                        Log.d("CurrentLocation","Lng : $tokenData")
+                    }
+                    if (bundle.containsKey("fgMock")) {
+                        val tokenData = bundle.getString("fgMock")
+                        if(tokenData=="true"){
+                            var c = this@HomeActivity
+                            ConfigUtil.showLoading(c,c,"Fake Gps atau Lokasi Palsu",
+                                "Maaf, " +
+                                    "Perangkat Anda Terdeteksi Aplikasi Fake Gps atau sejenisnya, " +
+                                    "Anda Dilarang menggunakan Aplikasi tersebut, " +
+                                    "Jika Masih Menggunakan Aplikasi Tersebut, " +
+                                    "Maka Anda Tidak Bisa Menggunakan Aplikasi Ini Selamanya!!!",
+                                "text"
+                            )
+                        }else if(tokenData=="false"){
+
+                        }
+                        Log.d("CurrentLocation","Gps Mock : $tokenData")
+                    }
+                }
+            }
+        }
     }
 }

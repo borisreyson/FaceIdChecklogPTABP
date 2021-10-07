@@ -1,4 +1,4 @@
-package com.misit.faceidchecklogptabp
+package com.misit.faceidchecklogptabp.OldClass
 
 import android.Manifest
 import android.content.Context
@@ -6,9 +6,7 @@ import android.content.Intent
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.location.Location
-import android.location.LocationListener
 import android.location.LocationManager
-import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -21,30 +19,21 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
-import com.google.android.gms.ads.AdListener
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.AdView
-import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.tasks.OnCompleteListener
-import com.google.firebase.analytics.FirebaseAnalytics
 //import com.google.firebase.iid.FirebaseInstanceId
 import com.google.firebase.messaging.FirebaseMessaging
 import com.misit.abpenergy.api.ApiClient
 import com.misit.abpenergy.api.ApiEndPoint
-import com.misit.faceidchecklogptabp.Response.AbpResponse
-import com.misit.faceidchecklogptabp.Response.AndroidTokenResponse
-import com.misit.faceidchecklogptabp.Response.AppVersionResponse
-import com.misit.faceidchecklogptabp.Response.MainResponse.FirstLoadResponse
+import com.misit.faceidchecklogptabp.HomeActivity
+import com.misit.faceidchecklogptabp.IndexActivity
+import com.misit.faceidchecklogptabp.LoginActivity
+import com.misit.faceidchecklogptabp.R
 import com.misit.faceidchecklogptabp.Utils.ConfigUtil
 import com.misit.faceidchecklogptabp.Utils.PrefsUtil
 import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 
 class MainActivity : AppCompatActivity() {
@@ -251,26 +240,30 @@ class MainActivity : AppCompatActivity() {
 
     fun loadFirst() {
         Log.v("FaceId", android_token)
-        if (PrefsUtil.getInstance().getBooleanState(PrefsUtil.IS_LOGGED_IN, false)) {
-            var nik = PrefsUtil.getInstance().getStringState(PrefsUtil.NIK, "")
-            val apiEndPoint = ApiClient.getClient(this)?.create(ApiEndPoint::class.java)
-            GlobalScope.launch {
-                try {
-                    val call = apiEndPoint?.tokenCorutine(nik, "faceId", android_token)
-                    if (call != null) {
-                        if (call.isSuccessful) {
-                            val response = call.body()
-                            if (response != null) {
-                                Log.v("FaceId", "Data" + response.toString())
-                                if (response.absensi == null) {
-                                    loadPage("Login")
-                                } else {
-                                    if (response.absensi.phoneToken == android_token) {
-                                        loadPage("Index")
+        try {
+            if (PrefsUtil.getInstance().getBooleanState(PrefsUtil.IS_LOGGED_IN, false)) {
+                var nik = PrefsUtil.getInstance().getStringState(PrefsUtil.NIK, "")
+                val apiEndPoint = ApiClient.getClient(this)?.create(ApiEndPoint::class.java)
+                GlobalScope.launch {
+                    try {
+                        val call = apiEndPoint?.tokenCorutine(nik, "faceId", android_token)
+                        if (call != null) {
+                            if (call.isSuccessful) {
+                                val response = call.body()
+                                if (response != null) {
+                                    Log.v("FaceId", "Data" + response.toString())
+                                    if (response.absensi == null) {
+                                        loadPage("Login")
                                     } else {
-                                        loadPage("Index")
-                                    }
+                                        if (response.absensi.phoneToken == android_token) {
+                                            loadPage("Index")
+                                        } else {
+                                            loadPage("Index")
+                                        }
 
+                                    }
+                                } else {
+                                    loadFirst()
                                 }
                             } else {
                                 loadFirst()
@@ -278,22 +271,23 @@ class MainActivity : AppCompatActivity() {
                         } else {
                             loadFirst()
                         }
-                    } else {
+
+
+                    } catch (e: Exception) {
+                        Log.e("MainError","${e.message}")
+                        loadFirst()
+                    } catch (e: InterruptedException) {
+                        Log.e("MainError","${e.message}")
                         loadFirst()
                     }
-
-
-                } catch (e: Exception) {
-                    Log.e("MainError","${e.message}")
-                    loadFirst()
-                } catch (e: InterruptedException) {
-                    Log.e("MainError","${e.message}")
-                    loadFirst()
                 }
+            } else {
+                loadPage("Login")
             }
-        } else {
-            loadPage("Login")
+        }catch (e:Exception){
+            Toasty.error(this@MainActivity,"${e.message}").show()
         }
+
     }
 
     //    androidToken
@@ -360,11 +354,7 @@ class MainActivity : AppCompatActivity() {
             intent.putExtra(IndexActivity.TIPE, tipe)
             startActivity(intent)
             finish()
-        } else {
-
         }
-
-
     }
 //    loadPage
 

@@ -41,6 +41,7 @@ import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.net.ConnectException
 
 class LoginActivity : AppCompatActivity(),View.OnClickListener {
 
@@ -104,19 +105,24 @@ class LoginActivity : AppCompatActivity(),View.OnClickListener {
         super.onResume()
     }
     fun cekLokasi(){
-        val apiEndPoint = ApiClient.getClient(this)?.create(ApiEndPoint::class.java)
-        GlobalScope.launch {
-            val call = apiEndPoint?.cekLokasiCorrutine()
-            if(call!=null){
-                if(call.isSuccessful){
-                    getToken()
+        try {
+            val apiEndPoint = ApiClient.getClient(this)?.create(ApiEndPoint::class.java)
+            GlobalScope.launch {
+                val call = apiEndPoint?.cekLokasiCorrutine()
+                if(call!=null){
+                    if(call.isSuccessful){
+                        getToken()
+                    }else{
+                        cekLokasi()
+                    }
                 }else{
-                    cekLokasi()
+                    koneksiInActive()
                 }
-            }else{
-                koneksiInActive()
             }
+        }catch (e:ConnectException){
+            Toasty.error(this@LoginActivity,"${e.message}").show()
         }
+
     }
 
     fun androidToken(){
@@ -140,6 +146,7 @@ class LoginActivity : AppCompatActivity(),View.OnClickListener {
                 if(call.isSuccessful){
                     if(call.body()!=null){
                         csrf_token = call.body()?.csrfToken
+                        Log.d("CsrfToken","$csrf_token")
                     }
                 }else{
                     getToken()
@@ -158,6 +165,7 @@ class LoginActivity : AppCompatActivity(),View.OnClickListener {
         }
     }
     fun loginSubmit(userIn:String,passIn:String){
+        Log.d("csrf_token","${csrf_token}")
         PopupUtil.showLoading(this@LoginActivity,"Logging In","Please Wait")
         val apiEndPoint = ApiClient.getClient(this)!!.create(ApiEndPoint::class.java)
         GlobalScope.launch(Dispatchers.Main) {

@@ -1,6 +1,5 @@
 package com.misit.faceidchecklogptabp.services
 
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -13,11 +12,9 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
-import com.misit.faceidchecklogptabp.IndexActivity
-import com.misit.faceidchecklogptabp.MainActivity
 import com.misit.faceidchecklogptabp.R
+import com.misit.faceidchecklogptabp.SplashActivity
 import com.misit.faceidchecklogptabp.Utils.PrefsUtil
-import kotlin.random.Random
 
 class MyFirebaseId : FirebaseMessagingService() {
     lateinit var notificationManager: NotificationManager
@@ -51,12 +48,12 @@ class MyFirebaseId : FirebaseMessagingService() {
     private fun notif(title: String?, body: String?,tipe:String?,nik:Int,urlUpdate:String?){
 
         if(tipe=="belum_absen"){
-            var intent = Intent(this,MainActivity::class.java)
-            intent.putExtra(MainActivity.TIPE,tipe)
+            var intent = Intent(this, SplashActivity::class.java)
+            intent.putExtra(SplashActivity.TIPE,tipe)
             showNotification(title,body,intent,"Belum Absen")
         }else if(tipe=="terlambat"){
-            var intent = Intent(this,MainActivity::class.java)
-            intent.putExtra(MainActivity.TIPE,tipe)
+            var intent = Intent(this, SplashActivity::class.java)
+            intent.putExtra(SplashActivity.TIPE,tipe)
             channelId= nik.toString()
             showNotification(title,body,intent, nik.toString())
         }else if(tipe=="update"){

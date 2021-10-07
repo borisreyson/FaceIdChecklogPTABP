@@ -157,4 +157,12 @@ dependencies {
     implementation 'com.getbase:floatingactionbutton:1.10.1'
     implementation 'com.facebook.shimmer:shimmer:0.5.0'
 //    implementation 'org.jetbrains:kotlin-numpy:0.1.5'
+    implementation 'com.inforoeste.mocklocationdetector:mock-location-detector:1.0.0'
+
+    def lifecycle_version = "2.3.1"
+
+    // ViewModel
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+    // LiveData
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
 }
