@@ -42,8 +42,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.messaging.FirebaseMessaging
@@ -668,6 +667,16 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
         val userLocation = LatLng(LAT, LNG)
         mMap?.addMarker(MarkerOptions().position(userLocation).title(NAMA))
         mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15f))
+        val polylineOptions = PolygonOptions()
+            .add(LatLng(37.4217915, -122.0639852))
+            .add(LatLng(37.4217915, -122.0539852)) // North of the previous point, but at the same longitude
+            .add(LatLng(37.4217915, -122.0439852)) // Same latitude, and 30km to the west
+            .add(LatLng(37.4217915, -122.0339852)) // Same longitude, and 16km to the south
+            .add(LatLng(37.4217915, -122.0239852)) // Closes the polyline.
+        // Get back the mutable Polyline
+        val polyline = mMap?.addPolygon(polylineOptions)
+        polyline?.setPoints()
+
     }
 
 }
