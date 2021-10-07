@@ -24,13 +24,10 @@ class AbsenMapActivity : FragmentActivity(), OnMapReadyCallback {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_absen_map)
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-
         mapFragment?.getMapAsync(this)
-
         lat = intent.getDoubleExtra(KEY_LAT,0.0)
         lng = intent.getDoubleExtra(KEY_LNG,0.0)
         nama = intent.getStringExtra(NAMA)
-
     }
 
     override fun onMapReady(googleMap: GoogleMap?) {

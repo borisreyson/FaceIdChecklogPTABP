@@ -183,9 +183,21 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Absen 3 hari terakhir"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <fragment
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:name="com.google.android.gms.maps.SupportMapFragment"
+                android:id="@+id/map"
+                />
+        </LinearLayout>
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            >
             <ScrollView
                 android:id="@+id/scrlLast"
                 android:layout_width="0dp"

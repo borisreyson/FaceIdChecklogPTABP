@@ -8,12 +8,14 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Point
 import android.graphics.drawable.ColorDrawable
 import android.location.Location
 import android.location.LocationManager
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -26,6 +28,7 @@ import android.view.ViewGroup
 import android.widget.DatePicker
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -35,6 +38,12 @@ import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.messaging.FirebaseMessaging
@@ -49,9 +58,6 @@ import com.misit.faceidchecklogptabp.Utils.PopupUtil
 import com.misit.faceidchecklogptabp.Utils.PrefsUtil
 import com.misit.faceidchecklogptabp.services.LocationService
 import kotlinx.android.synthetic.main.activity_home.*
-import kotlinx.android.synthetic.main.activity_home.tvJam
-import kotlinx.android.synthetic.main.activity_home.tvNama
-import kotlinx.android.synthetic.main.activity_home.tvNik
 import kotlinx.android.synthetic.main.lupa_masuk.view.*
 import kotlinx.android.synthetic.main.lupa_pulang.view.*
 import kotlinx.coroutines.Dispatchers
@@ -61,7 +67,9 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
-class HomeActivity : AppCompatActivity(),View.OnClickListener {
+
+class HomeActivity : AppCompatActivity(),View.OnClickListener,
+    OnMapReadyCallback {
     lateinit var handler : Handler
     lateinit var tm : TelephonyManager
     private var IMEI :String?=null
@@ -81,12 +89,12 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
     private var adapter: Last3DaysAdapter? = null
     private var absenList: MutableList<AbsenTigaHariItem>? = null
     lateinit var rvLast3Day :RecyclerView
+    private var mMap : GoogleMap?= null
     private val updateClock = object :Runnable{
         override fun run() {
             doJob()
-            handler.postDelayed(this,1000)
+            handler.postDelayed(this, 1000)
         }
-
     }
     @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -94,23 +102,33 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
         setContentView(R.layout.activity_home)
         tvJam.text =""
         androidToken()
-        var intPerm :Int= ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
+        var intPerm :Int= ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.READ_PHONE_STATE
+        )
         if(intPerm== PackageManager.PERMISSION_GRANTED){
             tm = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                IMEI = Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID)
+                IMEI = Settings.Secure.getString(
+                    this.getContentResolver(),
+                    Settings.Secure.ANDROID_ID
+                )
             } else {
                 IMEI = tm.getDeviceId()
             }
         }
         else{
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_PHONE_STATE),123)
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.READ_PHONE_STATE),
+                123
+            )
         }
         PrefsUtil.initInstance(this)
-        if(PrefsUtil.getInstance().getBooleanState(PrefsUtil.IS_LOGGED_IN,false)){
-            NAMA = PrefsUtil.getInstance().getStringState(PrefsUtil.NAMA_LENGKAP,"")
-            NIK = PrefsUtil.getInstance().getStringState(PrefsUtil.NIK,"")
-            SHOW_ABSEN = PrefsUtil.getInstance().getStringState(PrefsUtil.SHOW_ABSEN,"")
+        if(PrefsUtil.getInstance().getBooleanState(PrefsUtil.IS_LOGGED_IN, false)){
+            NAMA = PrefsUtil.getInstance().getStringState(PrefsUtil.NAMA_LENGKAP, "")
+            NIK = PrefsUtil.getInstance().getStringState(PrefsUtil.NIK, "")
+            SHOW_ABSEN = PrefsUtil.getInstance().getStringState(PrefsUtil.SHOW_ABSEN, "")
         }else{
             startActivity(Intent(this@HomeActivity, SplashActivity::class.java))
             finish()
@@ -127,7 +145,7 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
 //            doJob()
 //        }
         absenList = ArrayList()
-        adapter = Last3DaysAdapter(this@HomeActivity,absenList!!,NIK,NAMA)
+        adapter = Last3DaysAdapter(this@HomeActivity, absenList!!, NIK, NAMA)
         rvLast3Day = findViewById(R.id.rvLast3Day)
         val linearLayoutManager = LinearLayoutManager(this@HomeActivity)
         rvLast3Day.layoutManager = linearLayoutManager
@@ -188,7 +206,8 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
         FirebaseMessaging.getInstance().token
             .addOnCompleteListener(OnCompleteListener { task ->
                 if (!task.isSuccessful) {
-                    Toast.makeText(this@HomeActivity,"Error : $task.exception", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@HomeActivity, "Error : $task.exception", Toast.LENGTH_SHORT)
+                        .show()
 
                     return@OnCompleteListener
                 }
@@ -198,8 +217,10 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
     }
     //    androidToken
     override fun onResume() {
-        LocalBroadcastManager.getInstance(this@HomeActivity).registerReceiver(tokenPassingReceiver!!, IntentFilter(
-            Constants.APP_ID)
+        LocalBroadcastManager.getInstance(this@HomeActivity).registerReceiver(
+            tokenPassingReceiver!!, IntentFilter(
+                Constants.APP_ID
+            )
         )
 
         MobileAds.initialize(this) {}
@@ -212,8 +233,8 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
                 // Code to be executed when an ad finishes loading.
             }
 
-            override fun onAdFailedToLoad(errorCode : Int) {
-                Log.d("errorCode",errorCode.toString())
+            override fun onAdFailedToLoad(errorCode: Int) {
+                Log.d("errorCode", errorCode.toString())
                 // Code to be executed when an ad request fails.
             }
 
@@ -311,7 +332,7 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
         tvJam.text =""
         val apiEndPoint = ApiClient.getClient(this@HomeActivity)?.create(ApiEndPoint::class.java)
         GlobalScope.launch {
-            val call = apiEndPoint?.tokenCorutine(NIK,"faceId",android_token)
+            val call = apiEndPoint?.tokenCorutine(NIK, "faceId", android_token)
                 if (call != null) {
                     if(call.isSuccessful)
                     {
@@ -339,12 +360,11 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
     fun koneksiInActive(){
         AlertDialog.Builder(this)
             .setTitle("Maaf , Anda Harus Menggunakan Jaringan Wifi PT. ABP!")
-            .setPositiveButton("OK, Keluar",{
-                    _,
-                    _ ->
+            .setPositiveButton("OK, Keluar", { _,
+                                               _ ->
                 finish()
             })
-            .setOnDismissListener({_ -> finish()  })
+            .setOnDismissListener({ _ -> finish() })
             .show()
     }
     fun cekFaceID(){
@@ -366,7 +386,10 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
 //                        btnFaceFalse.visibility=View.VISIBLE
 //                        btnFaceTrue.visibility=View.GONE
                                 PopupUtil.dismissDialog()
-                                val intent = Intent(this@HomeActivity, DaftarWajahActivity::class.java)
+                                val intent = Intent(
+                                    this@HomeActivity,
+                                    DaftarWajahActivity::class.java
+                                )
                                 startActivity(intent)
                             }
                         }else{
@@ -468,7 +491,7 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
                         }else{
                             loadAbsenTigaHari()
                         }
-                        Log.d("DATATIGAHARI",res.toString())
+                        Log.d("DATATIGAHARI", res.toString())
                     }else{
                         loadAbsenTigaHari()
                     }
@@ -484,7 +507,7 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
     fun showDialogLupaMasuk(){
         MobileAds.initialize(this) {}
 
-        viewPassword = LayoutInflater.from(this@HomeActivity).inflate(R.layout.lupa_masuk,null)
+        viewPassword = LayoutInflater.from(this@HomeActivity).inflate(R.layout.lupa_masuk, null)
         if(viewPassword.parent!=null){
             (viewPassword.parent as ViewGroup).removeView(viewPassword)
         }
@@ -494,7 +517,10 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
         viewPassword.btnLupaAbsenMasuk.setOnClickListener{
             if(viewPassword.tglLupaAbsenMasuk.text!!.isNotEmpty()){
                 val intent= Intent(this, LupaMasukActivity::class.java)
-                intent.putExtra(LupaMasukActivity.TGL_LUPA_ABSEN, viewPassword.tglLupaAbsenMasuk.text.toString())
+                intent.putExtra(
+                    LupaMasukActivity.TGL_LUPA_ABSEN,
+                    viewPassword.tglLupaAbsenMasuk.text.toString()
+                )
                 startActivity(intent)
                 alertDialog.dismiss()
             }else{
@@ -511,7 +537,7 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
         alertDialog.show()
     }
     fun showDialogLupaPulang(){
-        viewPassword = LayoutInflater.from(this@HomeActivity).inflate(R.layout.lupa_pulang,null)
+        viewPassword = LayoutInflater.from(this@HomeActivity).inflate(R.layout.lupa_pulang, null)
         if(viewPassword.parent!=null){
             (viewPassword.parent as ViewGroup).removeView(viewPassword)
         }
@@ -521,7 +547,10 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
         viewPassword.btnLupaAbsenPulang.setOnClickListener{
             if(viewPassword.tglLupaAbsenPulang.text!!.isNotEmpty()){
                 val intent= Intent(this, LupaPulangActivity::class.java)
-                intent.putExtra(LupaPulangActivity.TGL_LUPA_ABSEN, viewPassword.tglLupaAbsenPulang.text.toString())
+                intent.putExtra(
+                    LupaPulangActivity.TGL_LUPA_ABSEN,
+                    viewPassword.tglLupaAbsenPulang.text.toString()
+                )
                 startActivity(intent)
                 alertDialog.dismiss()
             }else{
@@ -537,25 +566,23 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
         alertDialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         alertDialog.show()
     }
-
     fun showDialogTgl(inTgl: TextInputEditText){
         val now = Calendar.getInstance()
-        val datePicker  = DatePickerDialog.OnDateSetListener{
-                view: DatePicker?, year: Int, month: Int, dayOfMonth: Int ->
-            now.set(Calendar.YEAR,year)
-            now.set(Calendar.MONTH,month)
-            now.set(Calendar.DAY_OF_MONTH,dayOfMonth)
+        val datePicker  = DatePickerDialog.OnDateSetListener{ view: DatePicker?, year: Int, month: Int, dayOfMonth: Int ->
+            now.set(Calendar.YEAR, year)
+            now.set(Calendar.MONTH, month)
+            now.set(Calendar.DAY_OF_MONTH, dayOfMonth)
             inTgl.setText(SimpleDateFormat("dd MMMM yyyy").format(now.time))
         }
 
-        DatePickerDialog(this,
+        DatePickerDialog(
+            this,
             datePicker,
             now.get(Calendar.YEAR),
             now.get(Calendar.MONTH),
             now.get(Calendar.DAY_OF_MONTH)
         ).show()
     }
-
     override fun onDestroy() {
         var c = this@HomeActivity
         var jvClass = LocationService::class.java
@@ -600,31 +627,47 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener {
 
                     if (bundle.containsKey("fgLat")) {
                         val tokenData = bundle.getString("fgLat")
-                        Log.d("CurrentLocation","Lat : $tokenData")
+                        Log.d("CurrentLocation", "Lat : $tokenData")
+                        LAT = tokenData!!.toDouble()
+
                     }
                     if (bundle.containsKey("fgLng")) {
                         val tokenData = bundle.getString("fgLng")
-                        Log.d("CurrentLocation","Lng : $tokenData")
+                        Log.d("CurrentLocation", "Lng : $tokenData")
+                        LAT = tokenData!!.toDouble()
                     }
                     if (bundle.containsKey("fgMock")) {
                         val tokenData = bundle.getString("fgMock")
                         if(tokenData=="true"){
                             var c = this@HomeActivity
-                            ConfigUtil.showLoading(c,c,"Fake Gps atau Lokasi Palsu",
+                            ConfigUtil.showLoading(
+                                c, c, "Fake Gps atau Lokasi Palsu",
                                 "Maaf, " +
-                                    "Perangkat Anda Terdeteksi Aplikasi Fake Gps atau sejenisnya, " +
-                                    "Anda Dilarang menggunakan Aplikasi tersebut, " +
-                                    "Jika Masih Menggunakan Aplikasi Tersebut, " +
-                                    "Maka Anda Tidak Bisa Menggunakan Aplikasi Ini Selamanya!!!",
+                                        "Perangkat Anda Terdeteksi Aplikasi Fake Gps atau sejenisnya, " +
+                                        "Anda Dilarang menggunakan Aplikasi tersebut, " +
+                                        "Jika Masih Menggunakan Aplikasi Tersebut, " +
+                                        "Maka Anda Tidak Bisa Menggunakan Aplikasi Ini Selamanya!!!",
                                 "text"
                             )
                         }else if(tokenData=="false"){
-
+                            loadFragment()
                         }
-                        Log.d("CurrentLocation","Gps Mock : $tokenData")
+                        Log.d("CurrentLocation", "Gps Mock : $tokenData")
                     }
                 }
             }
         }
     }
+    private fun loadFragment(){
+        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+        mapFragment?.getMapAsync(this)
+    }
+
+    override fun onMapReady(googleMap: GoogleMap?) {
+        mMap = googleMap
+        val userLocation = LatLng(LAT, LNG)
+        mMap?.addMarker(MarkerOptions().position(userLocation).title(NAMA))
+        mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15f))
+    }
+
 }
