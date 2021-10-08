@@ -8,11 +8,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.Point
+import android.graphics.*
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
 import android.location.Location
 import android.location.LocationManager
 import android.os.Build
@@ -31,6 +30,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmap
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -38,14 +38,12 @@ import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.messaging.FirebaseMessaging
+import com.google.maps.android.PolyUtil
 import com.misit.abpenergy.api.ApiClient
 import com.misit.abpenergy.api.ApiEndPoint
 import com.misit.faceidchecklogptabp.Absen.v1.*
@@ -95,6 +93,8 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
             handler.postDelayed(this, 1000)
         }
     }
+
+
     @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -221,6 +221,7 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
                 Constants.APP_ID
             )
         )
+        loadFragment()
 
         MobileAds.initialize(this) {}
         mAdView = findViewById(R.id.adViewIndex)
@@ -633,7 +634,7 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
                     if (bundle.containsKey("fgLng")) {
                         val tokenData = bundle.getString("fgLng")
                         Log.d("CurrentLocation", "Lng : $tokenData")
-                        LAT = tokenData!!.toDouble()
+                        LNG = tokenData!!.toDouble()
                     }
                     if (bundle.containsKey("fgMock")) {
                         val tokenData = bundle.getString("fgMock")
@@ -649,7 +650,6 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
                                 "text"
                             )
                         }else if(tokenData=="false"){
-                            loadFragment()
                         }
                         Log.d("CurrentLocation", "Gps Mock : $tokenData")
                     }
@@ -657,26 +657,42 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
             }
         }
     }
+
     private fun loadFragment(){
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment?.getMapAsync(this)
     }
 
     override fun onMapReady(googleMap: GoogleMap?) {
+        val a = LatLng(-0.563226, 117.014438)
+        val b = LatLng(-0.563036, 117.014484)
+        val c = LatLng(-0.562886, 117.014044)
+        val d = LatLng(-0.563060, 117.013937)
+        var mapAbp = listOf(a,b,c,d)
+        // Read your drawable from somewhere
+        // Read your drawable from somewhere
+        val dr = resources.getDrawable(R.drawable.abp_marker)
+        val bitmap = dr.toBitmap(100,100)
         mMap = googleMap
-        val userLocation = LatLng(LAT, LNG)
+        var userLocation = LatLng(LAT, LNG)
+        var abpLocation = LatLng(-0.5630524017935674, 117.01412594100552)
         mMap?.addMarker(MarkerOptions().position(userLocation).title(NAMA))
-        mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15f))
+        mMap?.addMarker(MarkerOptions().position(abpLocation).title("ABP Energy"))
+            ?.setIcon(BitmapDescriptorFactory.fromBitmap(bitmap))
+        var cameraUpdate = CameraUpdateFactory.newLatLngZoom(abpLocation, 70f)
+        mMap?.animateCamera(cameraUpdate)
+//        mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15f))
         val polylineOptions = PolygonOptions()
-            .add(LatLng(37.4217915, -122.0639852))
-            .add(LatLng(37.4217915, -122.0539852)) // North of the previous point, but at the same longitude
-            .add(LatLng(37.4217915, -122.0439852)) // Same latitude, and 30km to the west
-            .add(LatLng(37.4217915, -122.0339852)) // Same longitude, and 16km to the south
-            .add(LatLng(37.4217915, -122.0239852)) // Closes the polyline.
+            .add(a) // North of the previous point, but at the same longitude
+            .add(b) // Same latitude, and 30km to the west
+            .add(c) // Same longitude, and 16km to the south
+            .add(d) // Closes the polyline.
         // Get back the mutable Polyline
         val polyline = mMap?.addPolygon(polylineOptions)
-        polyline?.setPoints()
-
+        polyline!!.strokeColor = R.color.successColor
+        polyline.fillColor= R.color.green_smooth
+        var isInside = PolyUtil.containsLocation(userLocation,mapAbp,true)
+        Log.d("CurrentLocation","IsInside ${isInside}")
     }
 
 }
