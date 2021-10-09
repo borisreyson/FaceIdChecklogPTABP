@@ -239,7 +239,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun loadFirst() {
-        Log.v("FaceId", android_token)
+        android_token?.let { Log.v("FaceId", it) }
         try {
             if (PrefsUtil.getInstance().getBooleanState(PrefsUtil.IS_LOGGED_IN, false)) {
                 var nik = PrefsUtil.getInstance().getStringState(PrefsUtil.NIK, "")

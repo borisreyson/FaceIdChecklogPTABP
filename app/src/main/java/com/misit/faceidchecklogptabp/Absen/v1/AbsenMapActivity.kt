@@ -27,7 +27,7 @@ class AbsenMapActivity : FragmentActivity(), OnMapReadyCallback {
         mapFragment?.getMapAsync(this)
         lat = intent.getDoubleExtra(KEY_LAT,0.0)
         lng = intent.getDoubleExtra(KEY_LNG,0.0)
-        nama = intent.getStringExtra(NAMA)
+        nama = intent.getStringExtra(NAMA).toString()
     }
 
     override fun onMapReady(googleMap: GoogleMap?) {

@@ -217,7 +217,7 @@ class IndexActivity : AppCompatActivity(),View.OnClickListener, LocationListener
     }
 
     override fun onPause() {
-        handler.removeCallbacks(r)
+        r?.let { handler.removeCallbacks(it) }
         super.onPause()
     }
     fun loadAbsen(){
@@ -370,10 +370,10 @@ class IndexActivity : AppCompatActivity(),View.OnClickListener, LocationListener
                 }
             }
         }
-        handler.postDelayed(r,1000)
+        r?.let { handler.postDelayed(it,1000) }
     }
     fun cekLokasi(){
-        handler.removeCallbacks(r)
+        r?.let { handler.removeCallbacks(it) }
         r = Runnable{
             cekLokasi()
         }
@@ -710,7 +710,7 @@ class IndexActivity : AppCompatActivity(),View.OnClickListener, LocationListener
 
     }
 
-    override fun onLocationChanged(location: Location?) {
+    override fun onLocationChanged(location: Location) {
         mLocation=location
 //        mLocationManager?.removeUpdates(this)
         if (location != null) {
@@ -731,12 +731,13 @@ class IndexActivity : AppCompatActivity(),View.OnClickListener, LocationListener
         }
     }
 
+
     override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
     }
 
-    override fun onProviderEnabled(provider: String?) {
+    override fun onProviderEnabled(provider: String) {
     }
 
-    override fun onProviderDisabled(provider: String?) {
+    override fun onProviderDisabled(provider: String) {
     }
 }

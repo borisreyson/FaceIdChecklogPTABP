@@ -27,4 +27,15 @@ object dbQuery {
                 "timeIn TEXT," +
                 "tanggal_jam TEXT)")
     }
+    fun tbMapArea(db: SQLiteDatabase?){
+        db?.execSQL("CREATE TABLE map_area "+
+                "(idLok INTEGER, "+
+                "company TEXT," +
+                "lat REAL," +
+                "lng REAL," +
+                "time_update Text," +
+                "flag INTEGER)")
+
+
+    }
 }

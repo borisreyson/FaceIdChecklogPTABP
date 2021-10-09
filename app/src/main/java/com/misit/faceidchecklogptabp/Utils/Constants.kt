@@ -1,6 +1,8 @@
 package com.misit.faceidchecklogptabp.Utils
 
 object Constants {
+    const val FaceWorker = "FaceWorker"
+    const val JOB_SERVICE_ID = 1995
     const val CHANNEL_ID = "12"
     const val NOTIFICATION_ID = 13
     const val SERVICE_START = "SERVICE_START"

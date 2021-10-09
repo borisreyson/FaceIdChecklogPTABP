@@ -29,16 +29,16 @@ class ViewImageActivity : AppCompatActivity(),View.OnClickListener {
 
         var gambar = intent.getStringExtra(GAMBAR)
         var nik = intent.getStringExtra(NIK)
-        nama = intent.getStringExtra(NAMA)
+        nama = intent.getStringExtra(NAMA).toString()
         var tgl = intent.getStringExtra(TGL)
         var jam = intent.getStringExtra(JAM)
         var status = intent.getStringExtra(STATUS)
-        lat = intent.getStringExtra(LAT).toDouble()
-        lng = intent.getStringExtra(LNG).toDouble()
+        lat = intent.getStringExtra(LAT)!!.toDouble()
+        lng = intent.getStringExtra(LNG)!!.toDouble()
         var lupa_absen = intent.getStringExtra(LUPA_ABSEN)
         title = nama
         detNama.text= "($nik) $nama"
-        detTGL.text = DateUtils.fmt(tgl)
+        detTGL.text = tgl?.let { DateUtils.fmt(it) }
         detJam.text = jam
         detStatus.text = status
         tvLAT.text= lat.toString();

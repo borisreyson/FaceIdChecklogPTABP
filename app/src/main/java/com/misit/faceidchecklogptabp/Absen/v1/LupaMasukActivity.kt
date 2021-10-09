@@ -24,6 +24,7 @@ import dmax.dialog.SpotsDialog
 import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.activity_lupa_masuk.*
 import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Call
@@ -163,7 +164,7 @@ class LupaMasukActivity : AppCompatActivity() {
             e.printStackTrace()
         }
         var uri = Uri.parse(file.absolutePath)
-        var fileUri = RequestBody.create(MediaType.parse("image/*"),file)
+        var fileUri = RequestBody.create("image/*".toMediaTypeOrNull(),file)
         //Log.d("fileUri",fileUri.toString())
         var niK = RequestBody.create(MultipartBody.FORM, niknya!!)
         var tanggal = RequestBody.create(MultipartBody.FORM, tglLupaAbsen!!)

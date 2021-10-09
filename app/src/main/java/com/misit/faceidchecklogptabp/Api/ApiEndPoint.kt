@@ -135,4 +135,9 @@ interface ApiEndPoint{
     fun getListMasukan(@Query("page") page:Int?,
                        @Query("cari") cari:String?)
             : Call<com.misit.faceidchecklogptabp.Masukan.Response.MasukanResponse>?
+
+
+    @GET("/absen/map/area")
+    fun getMapArea(@Query("company") company:String?)
+            : Response<MapAreaResponse>?
 }

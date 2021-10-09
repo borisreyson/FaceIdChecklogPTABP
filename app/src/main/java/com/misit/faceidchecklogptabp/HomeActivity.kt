@@ -34,6 +34,7 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.work.*
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
@@ -48,11 +49,14 @@ import com.misit.abpenergy.api.ApiClient
 import com.misit.abpenergy.api.ApiEndPoint
 import com.misit.faceidchecklogptabp.Absen.v1.*
 import com.misit.faceidchecklogptabp.Adapter.Last3DaysAdapter
+import com.misit.faceidchecklogptabp.DataSource.MapAreaDataSource
+import com.misit.faceidchecklogptabp.Models.CompanyLocationModel
 import com.misit.faceidchecklogptabp.Response.AbsenTigaHariItem
 import com.misit.faceidchecklogptabp.Utils.ConfigUtil
 import com.misit.faceidchecklogptabp.Utils.Constants
 import com.misit.faceidchecklogptabp.Utils.PopupUtil
 import com.misit.faceidchecklogptabp.Utils.PrefsUtil
+import com.misit.faceidchecklogptabp.services.FaceIdWorker
 import com.misit.faceidchecklogptabp.services.LocationService
 import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.android.synthetic.main.lupa_masuk.view.*
@@ -60,8 +64,10 @@ import kotlinx.android.synthetic.main.lupa_pulang.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.sql.SQLException
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 
 
@@ -87,6 +93,10 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
     private var absenList: MutableList<AbsenTigaHariItem>? = null
     lateinit var rvLast3Day :RecyclerView
     private var mMap : GoogleMap?= null
+    var modelCompany : MutableList<CompanyLocationModel>?= null
+    var workManager: WorkManager?=null
+    var abpLocation:LatLng?=null
+
     private val updateClock = object :Runnable{
         override fun run() {
             doJob()
@@ -94,17 +104,22 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
         }
     }
 
-
+    var userLocation :LatLng? = null
+    var liveLocation = mMap?.addMarker(MarkerOptions().position(userLocation!!).title(NAMA))
+    var mapAbp : MutableList<LatLng>?=null
     @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
+
         tvJam.text =""
         androidToken()
         var intPerm :Int= ContextCompat.checkSelfPermission(
             this,
             Manifest.permission.READ_PHONE_STATE
         )
+        modelCompany = ArrayList()
+        mapAbp = mutableListOf()
         if(intPerm== PackageManager.PERMISSION_GRANTED){
             tm = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -162,9 +177,34 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
 //        val pythonFile = python.getModule("helloworldscript")
 //        val helloWorldString = pythonFile.callAttr("helloworld")
 //        Toasty.info(this@HomeActivity,"${helloWorldString}",Toasty.LENGTH_LONG).show()
-        reciever()
-    }
+        userLocation =LatLng(LAT, LNG)
+        loadFragment()
 
+        abpLocation = LatLng(-0.5630524017935674, 117.01412594100552)
+        var cameraUpdate = CameraUpdateFactory.newLatLngZoom(abpLocation, 20f)
+        mMap?.animateCamera(cameraUpdate)
+
+        myWork()
+        reciever()
+
+    }
+    private fun myWork(){
+        workManager = WorkManager.getInstance(this@HomeActivity)
+        val constraint = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.UNMETERED)
+            .setRequiresCharging(false)
+            .setRequiresBatteryNotLow(false)
+            .build()
+        val myRequest = PeriodicWorkRequest.Builder(
+            FaceIdWorker::class.java,
+            15, TimeUnit.MINUTES
+        ).setConstraints(constraint)
+            .build()
+        workManager?.enqueueUniquePeriodicWork(Constants.FaceWorker,
+            ExistingPeriodicWorkPolicy.KEEP,
+            myRequest)
+
+    }
     override fun onClick(v: View?) {
         if(v?.id==R.id.btnNewMasuk){
             val intent= Intent(this, MasukActivity::class.java)
@@ -221,7 +261,6 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
                 Constants.APP_ID
             )
         )
-        loadFragment()
 
         MobileAds.initialize(this) {}
         mAdView = findViewById(R.id.adViewIndex)
@@ -603,6 +642,7 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
         var NIK = "NIK"
         var NAMA = "NAMA"
         var SHOW_ABSEN="SHOW_ABSEN"
+        var PERUSAHAAN="PERUSAHAAN"
         var PERSENTASE = "PERSENTASE"
         var LAT = 0.0
         var LNG = 0.0
@@ -629,7 +669,6 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
                         val tokenData = bundle.getString("fgLat")
                         Log.d("CurrentLocation", "Lat : $tokenData")
                         LAT = tokenData!!.toDouble()
-
                     }
                     if (bundle.containsKey("fgLng")) {
                         val tokenData = bundle.getString("fgLng")
@@ -650,6 +689,8 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
                                 "text"
                             )
                         }else if(tokenData=="false"){
+                            userLocation =LatLng(LAT, LNG)
+                            loadFragment()
                         }
                         Log.d("CurrentLocation", "Gps Mock : $tokenData")
                     }
@@ -662,26 +703,32 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment?.getMapAsync(this)
     }
-
     override fun onMapReady(googleMap: GoogleMap?) {
-        val a = LatLng(-0.563226, 117.014438)
-        val b = LatLng(-0.563036, 117.014484)
+        var mapArea = MapAreaDataSource(this@HomeActivity)
+        try {
+            mapArea.getMaps(PERUSAHAAN)
+        }catch (e:SQLException){
+            Log.d("CurrentLocation","${e.message}")
+        }
+        val a = LatLng(-0.5635840, 117.0140582)
+        val b = LatLng(-0.5636591, 117.0140615)
         val c = LatLng(-0.562886, 117.014044)
         val d = LatLng(-0.563060, 117.013937)
-        var mapAbp = listOf(a,b,c,d)
-        // Read your drawable from somewhere
-        // Read your drawable from somewhere
+        modelCompany?.forEach {
+            var latLng = LatLng(it.lat!!,it.lng!!)
+            mapAbp?.add(latLng)
+        }
+        liveLocation?.remove()
+        val me = resources.getDrawable(R.drawable.ic_baseline_my_location_24)
         val dr = resources.getDrawable(R.drawable.abp_marker)
         val bitmap = dr.toBitmap(100,100)
         mMap = googleMap
-        var userLocation = LatLng(LAT, LNG)
-        var abpLocation = LatLng(-0.5630524017935674, 117.01412594100552)
-        mMap?.addMarker(MarkerOptions().position(userLocation).title(NAMA))
-        mMap?.addMarker(MarkerOptions().position(abpLocation).title("ABP Energy"))
-            ?.setIcon(BitmapDescriptorFactory.fromBitmap(bitmap))
-        var cameraUpdate = CameraUpdateFactory.newLatLngZoom(abpLocation, 70f)
+        liveLocation = mMap?.addMarker(MarkerOptions().position(userLocation!!).title(NAMA).icon(BitmapDescriptorFactory.fromBitmap(me.toBitmap(80,80))))
+        liveLocation?.showInfoWindow()
+//        val abpMarker = mMap?.addMarker(MarkerOptions().position(abpLocation!!).title("ABP Energy").icon(BitmapDescriptorFactory.fromBitmap(bitmap)))
+//        abpMarker?.showInfoWindow()
+        var cameraUpdate = CameraUpdateFactory.newLatLngZoom(userLocation, 20f)
         mMap?.animateCamera(cameraUpdate)
-//        mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15f))
         val polylineOptions = PolygonOptions()
             .add(a) // North of the previous point, but at the same longitude
             .add(b) // Same latitude, and 30km to the west
@@ -691,7 +738,7 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
         val polyline = mMap?.addPolygon(polylineOptions)
         polyline!!.strokeColor = R.color.successColor
         polyline.fillColor= R.color.green_smooth
-        var isInside = PolyUtil.containsLocation(userLocation,mapAbp,true)
+        var isInside = PolyUtil.containsLocation(userLocation,mapAbp!!,true)
         Log.d("CurrentLocation","IsInside ${isInside}")
     }
 

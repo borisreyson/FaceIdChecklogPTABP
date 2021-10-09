@@ -25,6 +25,7 @@ import dmax.dialog.SpotsDialog
 import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.activity_daftar_wajah.*
 import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Call
@@ -173,7 +174,7 @@ class DaftarWajahActivity : AppCompatActivity() {
             e.printStackTrace()
         }
         var uri = Uri.parse(file.absolutePath)
-        var fileUri = RequestBody.create(MediaType.parse("image/*"),file)
+        var fileUri = RequestBody.create("image/*".toMediaTypeOrNull(),file)
         var niK = RequestBody.create(MultipartBody.FORM, niknya!!)
         var fileToUpload = MultipartBody.Part.createFormData("fileToUpload",file.name,fileUri)
 

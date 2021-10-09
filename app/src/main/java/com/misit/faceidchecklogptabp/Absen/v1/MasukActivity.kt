@@ -38,6 +38,7 @@ import kotlinx.android.synthetic.main.activity_masuk.camera_view
 import kotlinx.android.synthetic.main.activity_masuk.graphic_overlay
 import kotlinx.android.synthetic.main.activity_pulang.*
 import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Call
@@ -220,7 +221,7 @@ class MasukActivity : AppCompatActivity() {
             e.printStackTrace()
         }
         var uri = Uri.parse(file.absolutePath)
-        var fileUri = RequestBody.create(MediaType.parse("image/*"),file)
+        var fileUri = RequestBody.create("image/*".toMediaTypeOrNull(),file)
         //Log.d("fileUri",fileUri.toString())
         var niK = RequestBody.create(MultipartBody.FORM, niknya!!)
         var tanggal = RequestBody.create(MultipartBody.FORM, tgl)

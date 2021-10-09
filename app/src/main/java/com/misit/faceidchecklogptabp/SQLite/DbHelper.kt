@@ -4,15 +4,16 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
-class DbHelper(c: Context): SQLiteOpenHelper(c,DB_NAME,null,2) {
+class DbHelper(c: Context): SQLiteOpenHelper(c,DB_NAME,null,3) {
 
     companion object{
         val DB_NAME = "abp.db"
-        val tb = arrayOf("ABSENSI")
+        val tb = arrayOf("ABSENSI","map_area")
     }
 
     override fun onCreate(db: SQLiteDatabase?) {
         dbQuery.tbAbsensi(db)
+        dbQuery.tbMapArea(db)
 
     }
 

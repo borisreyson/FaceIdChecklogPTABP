@@ -25,15 +25,15 @@ class PersentaseActivity : AppCompatActivity() {
         var pengguna = intent.getStringExtra(PENGGUNA)
         var karyawan = intent.getStringExtra(KARYAWAN)
         var persentase = intent.getStringExtra(PERSENTASE)
-        var p ="%.2f".format(persentase.toFloat()).toFloat()
+        var p = persentase?.let { "%.2f".format(it.toFloat()).toFloat() }
         var description = Description()
         description.text=""
         persentaseTV.setText("${p.toString()} %")
         var pieChart:PieChart=findViewById(R.id.piePersentase)
 
         list =ArrayList()
-        list?.add(PieEntry(pengguna.toFloat(),"Pengguna"))
-        list?.add(PieEntry(karyawan.toFloat(),"Karyawan"))
+        list?.add(PieEntry(pengguna!!.toFloat(),"Pengguna"))
+        list?.add(PieEntry(karyawan!!.toFloat(),"Karyawan"))
         var dataPieSet = PieDataSet(list,"")
         var  pieData  = PieData(dataPieSet)
         pieChart.data=pieData
