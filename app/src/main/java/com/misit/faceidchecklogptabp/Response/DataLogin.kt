@@ -8,7 +8,9 @@ data class DataLogin(
 	@field:SerializedName("nama")
 	val nama: String? = null,
 	@field:SerializedName("show_absen")
-	val show_absen: String? = null
+	val show_absen: String? = null,
+	@field:SerializedName("perusahaan")
+	val perusahaan: String? = null
 
 
 )

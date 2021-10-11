@@ -20,10 +20,8 @@ import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
 import com.misit.abpenergy.api.ApiClient
 import com.misit.abpenergy.api.ApiEndPoint
-import com.misit.faceidchecklogptabp.Utils.ConfigUtil
-import com.misit.faceidchecklogptabp.Utils.Constants
-import com.misit.faceidchecklogptabp.Utils.ManagePermissions
-import com.misit.faceidchecklogptabp.Utils.PrefsUtil
+import com.misit.faceidchecklogptabp.DataSource.MapAreaDataSource
+import com.misit.faceidchecklogptabp.Utils.*
 import com.misit.faceidchecklogptabp.services.LocationService
 import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.activity_main.*
@@ -51,9 +49,12 @@ class SplashActivity  : AppCompatActivity() {
     var gps_enabled = false
     var network_enabled = false
     var tokenPassingReceiver : BroadcastReceiver?=null
+    lateinit var bgMapService : Intent
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        bgMapService = Intent(this@SplashActivity,MapUtilsService::class.java)
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             window.decorView.apply {
                 systemUiVisibility =
@@ -75,10 +76,30 @@ class SplashActivity  : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             managePermissions.checkPermissions()
         }
+        cekLogin()
         gps()
+
         LocalBroadcastManager.getInstance(this@SplashActivity).registerReceiver(tokenPassingReceiver!!, IntentFilter(Constants.APP_ID))
 
         super.onResume()
+    }
+    private fun cekLogin(){
+        if(PrefsUtil.getInstance().getBooleanState(PrefsUtil.IS_LOGGED_IN,false)){
+            NIK = PrefsUtil.getInstance().getStringState(PrefsUtil.NIK,"")
+            NAMA = PrefsUtil.getInstance().getStringState(PrefsUtil.NAMA_LENGKAP,"")
+            PERUSAHAAN = PrefsUtil.getInstance().getStringState("PERUSAHAAN","")
+            cekMapArea()
+        }else{
+            startActivity(Intent(this@SplashActivity, LoginActivity::class.java))
+        }
+        Log.d("PERUSAHAAN2",PERUSAHAAN)
+    }
+    private fun cekMapArea(){
+        var mapArea = MapAreaDataSource(this@SplashActivity)
+        if(mapArea.newMap(PERUSAHAAN,"")<=0){
+            Log.d("JobScheduler1","$PERUSAHAAN")
+            startService(bgMapService)
+        }
     }
     private fun gps(){
         try {
@@ -255,6 +276,7 @@ class SplashActivity  : AppCompatActivity() {
         var LAT = 0.0
         var LNG = 0.0
         var NotifNik = "NotifNik"
+        var PERUSAHAAN = "PERUSAHAAN"
         private const val DEBUG_TAG = "NetworkStatusExample"
     }
     private fun reciever() {

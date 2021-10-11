@@ -4,9 +4,11 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import android.util.Log
 import androidx.core.database.getIntOrNull
 import com.misit.faceidchecklogptabp.Models.CompanyLocationModel
 import com.misit.faceidchecklogptabp.SQLite.DbHelper
+import es.dmoral.toasty.Toasty
 
 class MapAreaDataSource(val c: Context) {
     var dbHelper : DbHelper
@@ -23,10 +25,10 @@ class MapAreaDataSource(val c: Context) {
         sqlDatabase?.close()
         dbHelper?.close()
     }
-    fun cekMap(company: String,time_update:String): Int {
+    fun cekMap(company: String,lat:String,lng:String): Int {
         openAccess()
         val c = sqlDatabase?.rawQuery("SELECT count(*) FROM "+
-                "${tbItem} WHERE company = '"+company+"' and time_update= '"+time_update+"' ",null)
+                "${tbItem} WHERE company = '"+company+"' and lat= '"+lat+"' and lng ='"+lng+"' ",null)
         c?.let {
             if(it.moveToFirst()){
                 return it?.getIntOrNull(0) ?: 0
@@ -54,6 +56,8 @@ class MapAreaDataSource(val c: Context) {
         openAccess()
         var cv = createCV(item)
         var hasil = sqlDatabase?.insertOrThrow("${tbItem}",null,cv)
+        Log.d("JobScheduler","D")
+
         closeAccess()
         return hasil!!
     }
@@ -69,6 +73,31 @@ class MapAreaDataSource(val c: Context) {
         c?.close()
         closeAccess()
         return listItem!!
+    }
+
+    fun getByIdMaps(idLok:Int): ArrayList<CompanyLocationModel> {
+        openAccess()
+        val c = sqlDatabase?.rawQuery("SELECT * FROM "+
+                "${tbItem} WHERE idLok = '$idLok'",null)
+        if(c!!.moveToFirst()){
+            do {
+                listItem?.add(fetchRow(c))
+            }while (c.moveToNext())
+        }
+        c?.close()
+        closeAccess()
+        return listItem!!
+    }
+
+    fun deleteItem(idLok:Int){
+        openAccess()
+        val hasil = sqlDatabase?.delete("${tbItem}","idLok = ? ", arrayOf(idLok.toString()))
+        if(hasil!! <0 ){
+            Log.d("Deleted","Gagal Hapus")
+        }else{
+            Log.d("Deleted","Hapus Berhasil")
+        }
+        closeAccess()
     }
     private fun fetchRow(cursor: Cursor): CompanyLocationModel {
         val idLok = cursor.getInt(cursor.getColumnIndex("idLok"))

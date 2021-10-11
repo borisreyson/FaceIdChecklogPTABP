@@ -4,27 +4,27 @@ import com.google.gson.annotations.SerializedName
 
 data class MapAreaResponse(
 
-	@field:SerializedName("MapAreaResponse")
-    var mapAreaResponse: List<MapAreaResponseItem>? = null
+	@field:SerializedName("mapArea")
+	val mapArea: List<MapAreaItem>? = null
 )
 
-data class MapAreaResponseItem(
+data class MapAreaItem(
 
 	@field:SerializedName("time_update")
-	var timeUpdate: String? = null,
+	val timeUpdate: String? = null,
 
 	@field:SerializedName("flag")
-    var flag: Int? = null,
+	val flag: Int? = null,
 
 	@field:SerializedName("lng")
-    var lng: Double? = null,
+	val lng: Double? = null,
 
 	@field:SerializedName("company")
-    var company: String? = null,
+	val company: String? = null,
 
 	@field:SerializedName("idLok")
-    var idLok: Int? = null,
+	val idLok: Int? = null,
 
 	@field:SerializedName("lat")
-    var lat: Double? = null
+	val lat: Double? = null
 )

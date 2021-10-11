@@ -14,7 +14,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.*
 
 object ApiClient{
-    private var BASE_URL= "http://10.10.3.13"
+//    private var BASE_URL= "http://10.10.3.13"
+    private var BASE_URL= "https://abpjobsite.com:8443"
     private var retrofit : Retrofit? = null
     fun getClient(context: Context?):Retrofit?{
         if (retrofit==null){

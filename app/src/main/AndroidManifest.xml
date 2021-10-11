@@ -176,6 +176,12 @@
             android:theme="@style/noActionBar"></activity>
 
         <service android:name=".services.LocationService" />
+        <service android:name=".Utils.MapUtilsService" />
+
+        <service
+            android:name=".services.JobServices"
+            android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
     </application>
 
 </manifest>

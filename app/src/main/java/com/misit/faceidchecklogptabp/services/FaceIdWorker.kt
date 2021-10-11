@@ -3,6 +3,7 @@ package com.misit.faceidchecklogptabp.services
 import android.app.job.JobScheduler
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.work.Worker
 import androidx.work.WorkerParameters
@@ -21,9 +22,13 @@ class FaceIdWorker(context: Context, workerParams: WorkerParameters): Worker(con
 
     private fun workBackground(){
         if(!ConfigUtil.isJobServiceOn(c, Constants.JOB_SERVICE_ID)){
+            Log.d("JobScheduler","New Run Service")
+
             ConfigUtil.jobScheduler(c,scheduler)
-            processWork(c,"New Run Service")
+            processWork(c,"workBackground New Run Service")
         }else{
+            Log.d("JobScheduler","workBackground Service Is Run")
+
             processWork(c,"Service Is Run")
         }
     }

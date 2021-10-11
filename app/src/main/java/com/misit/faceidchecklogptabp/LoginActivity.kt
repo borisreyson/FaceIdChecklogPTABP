@@ -196,6 +196,10 @@ class LoginActivity : AppCompatActivity(),View.OnClickListener {
                             PrefsUtil.getInstance()
                                 .setStringState(PrefsUtil.SHOW_ABSEN,
                                     usrResponse.dataLogin?.show_absen)
+                            PrefsUtil.getInstance()
+                                .setStringState("PERUSAHAAN",
+                                    usrResponse.dataLogin?.perusahaan)
+                            Log.d("LoginPerusahaan","${usrResponse.dataLogin?.perusahaan}")
                             Toasty.success(this@LoginActivity,"Login Success ",Toasty.LENGTH_LONG).show()
                             val intents = Intent(this@LoginActivity,HomeActivity::class.java)
                             finish()
