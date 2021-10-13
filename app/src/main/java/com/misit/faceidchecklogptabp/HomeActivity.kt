@@ -1,7 +1,6 @@
 package com.misit.faceidchecklogptabp
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.app.job.JobScheduler
 import android.content.BroadcastReceiver
@@ -10,9 +9,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.*
-import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.Drawable
 import android.location.Location
 import android.location.LocationManager
 import android.os.Build
@@ -40,7 +37,6 @@ import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
-import com.google.android.gms.dynamic.SupportFragmentWrapper
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.GoogleMap.MAP_TYPE_SATELLITE
 import com.google.android.gms.maps.model.*
@@ -150,8 +146,8 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
             SHOW_ABSEN = PrefsUtil.getInstance().getStringState(PrefsUtil.SHOW_ABSEN, "")
             PERUSAHAAN = PrefsUtil.getInstance().getStringState("PERUSAHAAN", "")
             if(PERUSAHAAN==""){
-                Log.d("Perusahaan1","$PERUSAHAAN")
-                PrefsUtil.getInstance().setBooleanState(PrefsUtil.IS_LOGGED_IN,false)
+                Log.d("Perusahaan1", "$PERUSAHAAN")
+                PrefsUtil.getInstance().setBooleanState(PrefsUtil.IS_LOGGED_IN, false)
                 startActivity(Intent(this@HomeActivity, LoginActivity::class.java))
             }
         }else{
@@ -200,7 +196,7 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
 
     }
     private fun myWork(){
-        Log.d("JobScheduler","WorkManager")
+        Log.d("JobScheduler", "WorkManager")
         workManager = WorkManager.getInstance(this@HomeActivity)
         val constraint = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.UNMETERED)
@@ -212,9 +208,11 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
             15, TimeUnit.MINUTES
         ).setConstraints(constraint)
             .build()
-        workManager?.enqueueUniquePeriodicWork(Constants.FaceWorker,
+        workManager?.enqueueUniquePeriodicWork(
+            Constants.FaceWorker,
             ExistingPeriodicWorkPolicy.KEEP,
-            myRequest)
+            myRequest
+        )
 
     }
     override fun onClick(v: View?) {
@@ -273,11 +271,11 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
                 Constants.APP_ID
             )
         )
-        if(ConfigUtil.isJobServiceOn(this@HomeActivity,Constants.JOB_SERVICE_ID)){
-            Log.d("JobScheduler","Service Is Running")
+        if(ConfigUtil.isJobServiceOn(this@HomeActivity, Constants.JOB_SERVICE_ID)){
+            Log.d("JobScheduler", "Service Is Running")
         }else{
-            Log.d("JobScheduler","New Run Job Scheduler")
-            ConfigUtil.jobScheduler(this@HomeActivity,scheduler)
+            Log.d("JobScheduler", "New Run Job Scheduler")
+            ConfigUtil.jobScheduler(this@HomeActivity, scheduler)
         }
         MobileAds.initialize(this) {}
         mAdView = findViewById(R.id.adViewIndex)
@@ -410,8 +408,8 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
                 }else{
                     cekLokasi()
                 }
-            }catch (e:Exception){
-                Log.d("ErrorLokasi","${e.message}")
+            }catch (e: Exception){
+                Log.d("ErrorLokasi", "${e.message}")
             }
 
         }
@@ -441,7 +439,7 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
 //                        btnFaceFalse.visibility=View.GONE
 //                        btnFaceTrue.visibility=View.VISIBLE
                                 PopupUtil.dismissDialog()
-                                loadAbsen()
+//                                loadAbsen()
 //                        btnDaftarWajah.visibility=View.GONE
                             }else{
 //                        btnFaceFalse.visibility=View.VISIBLE
@@ -730,12 +728,12 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
         try {
             modelCompany = mapArea.getMaps(PERUSAHAAN)
             modelCompany?.forEach {
-                var latLng = LatLng(it.lat!!,it.lng!!)
+                var latLng = LatLng(it.lat!!, it.lng!!)
                 polylineOptions.add(latLng)
                 mapAbp?.add(latLng)
             }
-        }catch (e:SQLException){
-            Log.d("CurrentLocation","${e.message}")
+        }catch (e: SQLException){
+            Log.d("CurrentLocation", "${e.message}")
         }
         val a = LatLng(-0.5635331, 117.0140253)
         val b = LatLng(-0.5633373, 117.0140924)
@@ -745,20 +743,35 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
         liveLocation?.remove()
         val me = resources.getDrawable(R.drawable.ic_baseline_my_location_24)
         val dr = resources.getDrawable(R.drawable.abp_marker)
-        val bitmap = dr.toBitmap(100,100)
+        val bitmap = dr.toBitmap(100, 100)
         mMap = googleMap
-        liveLocation = mMap?.addMarker(MarkerOptions().position(userLocation!!).title(NAMA).icon(BitmapDescriptorFactory.fromBitmap(me.toBitmap(80,80))))
+        liveLocation = mMap?.addMarker(
+            MarkerOptions().position(userLocation!!).title(NAMA).icon(
+                BitmapDescriptorFactory.fromBitmap(
+                    me.toBitmap(
+                        80,
+                        80
+                    )
+                )
+            )
+        )
         liveLocation?.showInfoWindow()
-        val abpMarker = mMap?.addMarker(MarkerOptions().position(abpLocation!!).title("PT Alamjaya Bara Pratama").icon(BitmapDescriptorFactory.fromBitmap(bitmap)))
+        val abpMarker = mMap?.addMarker(
+            MarkerOptions().position(abpLocation!!).title("PT Alamjaya Bara Pratama").icon(
+                BitmapDescriptorFactory.fromBitmap(
+                    bitmap
+                )
+            )
+        )
 //        abpMarker?.showInfoWindow()
         var cameraUpdate = CameraUpdateFactory.newLatLngZoom(userLocation, 20f)
         mMap?.animateCamera(cameraUpdate)
 
         val polyline = mMap?.addPolygon(polylineOptions)
-        polyline!!.strokeColor = Color.argb(100,40,123,250)
-        polyline.fillColor= Color.argb(40,40,123,250)
-        var isInside = PolyUtil.containsLocation(userLocation,mapAbp!!,true)
-        Log.d("CurrentLocation","IsInside ${isInside}")
+        polyline!!.strokeColor = Color.argb(100, 40, 123, 250)
+        polyline.fillColor= Color.argb(40, 40, 123, 250)
+        var isInside = PolyUtil.containsLocation(userLocation, mapAbp!!, true)
+        Log.d("CurrentLocation", "IsInside ${isInside}")
         if(isInside){
             loadAbsen()
         }else{

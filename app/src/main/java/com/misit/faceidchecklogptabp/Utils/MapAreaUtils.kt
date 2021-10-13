@@ -32,7 +32,7 @@ class MapAreaUtils() {
                                 item.lng = it.lng
                                 item.flag = it.flag
                                 item.time_update = it.timeUpdate
-                                insertArea(c,COMPANY,"${it.lat}","${it.lng}",item,it.idLok!!.toInt(),"${it.timeUpdate}")
+                                insertArea(c,"${it.lat}","${it.lng}",item,it.idLok!!.toInt(),"${it.timeUpdate}")
                                 Log.d("JobScheduler","Map Database ${it.idLok}")
 
                             }
@@ -42,10 +42,10 @@ class MapAreaUtils() {
             }
         }
     }
-    private fun insertArea(c:Context,company:String, lat:String, lng:String, item: CompanyLocationModel, idLok:Int,timeUpdate:String){
+    private fun insertArea(c:Context, lat:String, lng:String, item: CompanyLocationModel, idLok:Int,timeUpdate:String){
         var mapArea = MapAreaDataSource(c)
         try {
-                if(mapArea.cekMap(company,lat,lng)<=0){
+                if(mapArea.cekMap(idLok)<=0){
                     mapArea.insertItem(item)
                     Log.d("JobScheduler","a")
                 }else{
@@ -57,7 +57,7 @@ class MapAreaUtils() {
                             mapArea.updateItem(item,it.idLok!!)
                         }else{
                             Log.d("JobScheduler","c ${it.idLok}")
-                            mapArea.deleteItem(idLok)
+//                            mapArea.deleteItem(idLok)
                         }
                     }
                 }

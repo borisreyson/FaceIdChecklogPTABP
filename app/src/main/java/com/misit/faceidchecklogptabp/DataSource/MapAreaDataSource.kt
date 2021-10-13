@@ -25,10 +25,10 @@ class MapAreaDataSource(val c: Context) {
         sqlDatabase?.close()
         dbHelper?.close()
     }
-    fun cekMap(company: String,lat:String,lng:String): Int {
+    fun cekMap(idLok: Int): Int {
         openAccess()
         val c = sqlDatabase?.rawQuery("SELECT count(*) FROM "+
-                "${tbItem} WHERE company = '"+company+"' and lat= '"+lat+"' and lng ='"+lng+"' ",null)
+                "${tbItem} WHERE idLok = '"+idLok+"' ",null)
         c?.let {
             if(it.moveToFirst()){
                 return it?.getIntOrNull(0) ?: 0
