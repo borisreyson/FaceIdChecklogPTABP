@@ -223,13 +223,13 @@ class IndexActivity : AppCompatActivity(),View.OnClickListener, LocationListener
     fun loadAbsen(){
         val apiEndPoint = ApiClient.getClient(this)!!.create(ApiEndPoint::class.java)
         val call = apiEndPoint.lastAbsen(NIK!!)
-        call?.enqueue(object : Callback<AbsenLastResponse?> {
-            override fun onFailure(call: Call<AbsenLastResponse?>, t: Throwable) {
+        call?.enqueue(object : Callback<LastAbsenResponse?> {
+            override fun onFailure(call: Call<LastAbsenResponse?>, t: Throwable) {
                 loadAbsen()
             }
             override fun onResponse(
-                call: Call<AbsenLastResponse?>,
-                response: Response<AbsenLastResponse?>
+                call: Call<LastAbsenResponse?>,
+                response: Response<LastAbsenResponse?>
             ) {
 
                 val lastRes = response.body()

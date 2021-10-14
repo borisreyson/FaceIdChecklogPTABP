@@ -110,9 +110,8 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
         scheduler = getSystemService(JOB_SCHEDULER_SERVICE) as JobScheduler
-        mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-        mMap?.mapType = MAP_TYPE_SATELLITE
-        mapFragment?.getMapAsync(this)
+//        mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+//        mapFragment?.getMapAsync(this)
         tvJam.text =""
         androidToken()
         var intPerm :Int= ContextCompat.checkSelfPermission(
@@ -186,8 +185,7 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
 //        Toasty.info(this@HomeActivity,"${helloWorldString}",Toasty.LENGTH_LONG).show()
         userLocation =LatLng(LAT, LNG)
         abpLocation = LatLng(-0.5634222, 117.0139606)
-        var cameraUpdate = CameraUpdateFactory.newLatLngZoom(abpLocation, 20f)
-        mMap?.animateCamera(cameraUpdate)
+        state = 0
         loadFragment()
 
 
@@ -213,7 +211,6 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
             ExistingPeriodicWorkPolicy.KEEP,
             myRequest
         )
-
     }
     override fun onClick(v: View?) {
         if(v?.id==R.id.btnNewMasuk){
@@ -664,9 +661,10 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
         var SHOW_ABSEN="SHOW_ABSEN"
         var PERUSAHAAN="PERUSAHAAN"
         var PERSENTASE = "PERSENTASE"
-        var LAT = 0.0
-        var LNG = 0.0
+        var LAT = -0.5
+        var LNG = 117.0
         var TANGGAL = "Selasa, 30 Maret 2021"
+        var state =0
     }
     private fun reciever() {
         tokenPassingReceiver = object : BroadcastReceiver() {
@@ -709,6 +707,8 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
                                 "text"
                             )
                         }else if(tokenData=="false"){
+                            state=1
+
                             userLocation =LatLng(LAT, LNG)
                             loadFragment()
                         }
@@ -720,9 +720,13 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
     }
 
     private fun loadFragment(){
+        mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment?.getMapAsync(this)
+        mMap?.mapType = MAP_TYPE_SATELLITE
     }
     override fun onMapReady(googleMap: GoogleMap?) {
+        mapAbp?.clear()
+        var abpMarker:Marker?=null
         val polylineOptions = PolygonOptions()
         var mapArea = MapAreaDataSource(this@HomeActivity)
         try {
@@ -735,37 +739,46 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
         }catch (e: SQLException){
             Log.d("CurrentLocation", "${e.message}")
         }
-        val a = LatLng(-0.5635331, 117.0140253)
-        val b = LatLng(-0.5633373, 117.0140924)
-        val c = LatLng(-0.5632883, 117.0138714)
-        val d = LatLng(-0.5634989, 117.0138393)
-
         liveLocation?.remove()
         val me = resources.getDrawable(R.drawable.ic_baseline_my_location_24)
         val dr = resources.getDrawable(R.drawable.abp_marker)
         val bitmap = dr.toBitmap(100, 100)
         mMap = googleMap
-        liveLocation = mMap?.addMarker(
-            MarkerOptions().position(userLocation!!).title(NAMA).icon(
-                BitmapDescriptorFactory.fromBitmap(
-                    me.toBitmap(
-                        80,
-                        80
+        if(state<=0){
+            abpMarker?.remove()
+            abpMarker = mMap?.addMarker(
+                MarkerOptions().position(abpLocation!!).title("PT Alamjaya Bara Pratama").icon(
+                    BitmapDescriptorFactory.fromBitmap(
+                        bitmap
                     )
                 )
             )
-        )
-        liveLocation?.showInfoWindow()
-        val abpMarker = mMap?.addMarker(
-            MarkerOptions().position(abpLocation!!).title("PT Alamjaya Bara Pratama").icon(
-                BitmapDescriptorFactory.fromBitmap(
-                    bitmap
+            var cameraUpdate = CameraUpdateFactory.newLatLngZoom(abpLocation, 20f)
+            mMap?.animateCamera(cameraUpdate)
+        }else{
+            liveLocation = mMap?.addMarker(
+                MarkerOptions().position(userLocation!!).title(NAMA).icon(
+                    BitmapDescriptorFactory.fromBitmap(
+                        me.toBitmap(
+                            80,
+                            80
+                        )
+                    )
                 )
             )
-        )
-//        abpMarker?.showInfoWindow()
-        var cameraUpdate = CameraUpdateFactory.newLatLngZoom(userLocation, 20f)
-        mMap?.animateCamera(cameraUpdate)
+            abpMarker?.remove()
+            abpMarker = mMap?.addMarker(
+                MarkerOptions().position(abpLocation!!).title("PT Alamjaya Bara Pratama").icon(
+                    BitmapDescriptorFactory.fromBitmap(
+                        bitmap
+                    )
+                )
+            )
+            liveLocation?.showInfoWindow()
+            var cameraUpdate = CameraUpdateFactory.newLatLngZoom(userLocation, 20f)
+            mMap?.animateCamera(cameraUpdate)
+
+        }
 
         val polyline = mMap?.addPolygon(polylineOptions)
         polyline!!.strokeColor = Color.argb(100, 40, 123, 250)

@@ -35,7 +35,14 @@ object dbQuery {
                 "lng REAL," +
                 "time_update Text," +
                 "flag INTEGER)")
-
-
+    }
+    fun tbLastAbsen(db:SQLiteDatabase?){
+        db?.execSQL("CREATE TABLE lastAbsen "+
+                "(idLastAbsen INTEGER, "+
+                "lastAbsen TEXT," +
+                "lastNew Text," +
+                "tanggal Text," +
+                "masuk Text," +
+                "pulang Text)")
     }
 }

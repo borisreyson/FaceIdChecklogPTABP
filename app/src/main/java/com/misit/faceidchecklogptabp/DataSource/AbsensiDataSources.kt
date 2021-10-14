@@ -8,7 +8,7 @@ import androidx.core.database.getIntOrNull
 import com.misit.faceidchecklogptabp.Models.TigaHariModel
 import com.misit.faceidchecklogptabp.SQLite.DbHelper
 
-class TigaHariDataSources(val c: Context) {
+class AbsensiDataSources(val c: Context) {
     var dbHelper : DbHelper
     var sqlDatabase : SQLiteDatabase?=null
     var listItem :ArrayList<TigaHariModel>?=null
@@ -28,6 +28,20 @@ class TigaHariDataSources(val c: Context) {
         openAccess()
         val c = sqlDatabase?.rawQuery("SELECT count(*) FROM "+
                 "${tbItem} WHERE nik = '"+nik+"' ",null)
+        c?.let {
+            if(it.moveToFirst()){
+                return it?.getIntOrNull(0) ?: 0
+            }
+        }
+        c?.close()
+        closeAccess()
+        return 0
+    }
+
+    fun cekById(id: String): Int {
+        openAccess()
+        val c = sqlDatabase?.rawQuery("SELECT count(*) FROM "+
+                "${tbItem} WHERE id = '"+id+"' ",null)
         c?.let {
             if(it.moveToFirst()){
                 return it?.getIntOrNull(0) ?: 0

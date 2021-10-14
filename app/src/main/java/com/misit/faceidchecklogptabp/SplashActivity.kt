@@ -70,9 +70,11 @@ class SplashActivity  : AppCompatActivity() {
         Glide.with(this).load(R.drawable.abp).into(imageView)
         versionApp()
         reciever()
+
     }
 
     override fun onResume() {
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             managePermissions.checkPermissions()
         }
@@ -104,12 +106,14 @@ class SplashActivity  : AppCompatActivity() {
     private fun gps(){
         try {
             gps_enabled = lm!!.isProviderEnabled(LocationManager.GPS_PROVIDER)
-        } catch (ex: java.lang.Exception) {
+        } catch (ex: Exception) {
+            Log.d("errorGPS","${ex.message}")
         }
 
         try {
             network_enabled = lm!!.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-        } catch (ex: java.lang.Exception) {
+        } catch (ex: Exception) {
+            Log.d("errorGPS","${ex.message}")
         }
 
         if(!gps_enabled && !network_enabled) {

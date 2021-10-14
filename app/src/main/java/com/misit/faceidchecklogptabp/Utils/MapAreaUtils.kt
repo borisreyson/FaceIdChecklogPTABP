@@ -4,8 +4,10 @@ import android.content.Context
 import android.util.Log
 import com.misit.abpenergy.api.ApiClient
 import com.misit.abpenergy.api.ApiEndPoint
+import com.misit.faceidchecklogptabp.DataSource.AbsensiDataSources
 import com.misit.faceidchecklogptabp.DataSource.MapAreaDataSource
 import com.misit.faceidchecklogptabp.Models.CompanyLocationModel
+import com.misit.faceidchecklogptabp.Models.TigaHariModel
 import com.misit.faceidchecklogptabp.services.JobServices
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -14,7 +16,7 @@ import java.sql.SQLException
 
 class MapAreaUtils() {
     var TAG= "JobScheduler"
-    fun getMapArea(c:Context,COMPANY:String){
+    fun getMapArea(c:Context,COMPANY:String,nik:String){
         GlobalScope.launch(Dispatchers.IO) {
             var apiEndPoint = ApiClient.getClient(c)?.create(ApiEndPoint::class.java)
             var res = apiEndPoint?.getMapArea(COMPANY)
@@ -32,7 +34,7 @@ class MapAreaUtils() {
                                 item.lng = it.lng
                                 item.flag = it.flag
                                 item.time_update = it.timeUpdate
-                                insertArea(c,"${it.lat}","${it.lng}",item,it.idLok!!.toInt(),"${it.timeUpdate}")
+                                insertArea(c,item,it.idLok!!.toInt(),"${it.timeUpdate}",nik)
                                 Log.d("JobScheduler","Map Database ${it.idLok}")
 
                             }
@@ -42,7 +44,7 @@ class MapAreaUtils() {
             }
         }
     }
-    private fun insertArea(c:Context, lat:String, lng:String, item: CompanyLocationModel, idLok:Int,timeUpdate:String){
+    private fun insertArea(c:Context, item: CompanyLocationModel, idLok:Int,timeUpdate:String,nik:String){
         var mapArea = MapAreaDataSource(c)
         try {
                 if(mapArea.cekMap(idLok)<=0){
@@ -61,8 +63,76 @@ class MapAreaUtils() {
                         }
                     }
                 }
+            getAbsensi(c,nik)
         }catch (e: SQLException){
             Log.d(TAG,"${e.message}")
+        }
+    }
+    private fun getAbsensi(c:Context,nik:String){
+        val absensi = AbsensiDataSources(c)
+
+        GlobalScope.launch {
+
+            var absensiOnline = ApiClient.getClient(c)?.create(ApiEndPoint::class.java)
+            var response = absensiOnline?.getAbsensi(nik)
+            if(response!=null){
+                if (response.isSuccessful){
+                    var res = response.body()
+                    if(res!=null){
+                        var absen = res.absensi
+                        if(absen!=null){
+                            absen.forEach{
+                                val result = absensi.cekById("${it.id}")
+                                if(result<=0){
+                                    var item = TigaHariModel()
+                                    item.id = it.id
+                                    item.id_roster = it.idRoster
+                                    item.nik = it.nik
+                                    item.tanggal = it.tanggal
+                                    item.jam = it.jam
+                                    item.gambar = it.gambar
+                                    item.status = it.status
+                                    item.face_id = it.faceId
+                                    item.flag = "${it.flag}}"
+                                    item.OFF = "${it.oFF}"
+                                    item.IZIN_BERBAYAR = "${it.iZINBERBAYAR}"
+                                    item.ALPA = "${it.aLPA}"
+                                    item.CR = "${it.cR}"
+                                    item.CT = "${it.cT}"
+                                    item.SAKIT = "${it.sAKIT}"
+                                    item.lupa_absen = it.lupaAbsen
+                                    item.lat = "${it.lat}"
+                                    item.lng = "${it.lat}"
+                                    item.timeIn = it.timeIn
+                                    absensi.insertItem(item)
+                                }else{
+                                    var item = TigaHariModel()
+                                    item.id = it.id
+                                    item.id_roster = it.idRoster
+                                    item.nik = it.nik
+                                    item.tanggal = it.tanggal
+                                    item.jam = it.jam
+                                    item.gambar = it.gambar
+                                    item.status = it.status
+                                    item.face_id = it.faceId
+                                    item.flag = "${it.flag}"
+                                    item.OFF = "${it.oFF}"
+                                    item.IZIN_BERBAYAR = "${it.iZINBERBAYAR}"
+                                    item.ALPA = "${it.aLPA}"
+                                    item.CR = "${it.cR}"
+                                    item.CT = "${it.cT}"
+                                    item.SAKIT = "${it.sAKIT}"
+                                    item.lupa_absen = it.lupaAbsen
+                                    item.lat = "${it.lat}"
+                                    item.lng = "${it.lat}"
+                                    item.timeIn = it.timeIn
+                                    absensi.updateItem(item,it.id!!)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
     companion object{

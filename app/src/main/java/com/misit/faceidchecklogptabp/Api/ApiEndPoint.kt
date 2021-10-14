@@ -97,11 +97,11 @@ interface ApiEndPoint{
 
     @GET("/absen/get/lastAbsen")
     fun lastAbsen(@Query("nik") nik:String
-    ): Call<AbsenLastResponse>?
+    ): Call<LastAbsenResponse>?
 
     @GET("/absen/get/lastAbsen")
     suspend fun lastAbsenCorutine(@Query("nik") nik:String
-    ): Response<AbsenLastResponse>?
+    ): Response<LastAbsenResponse>?
 
     @GET("/absen/get/AbsenTigaHari")
     suspend fun absenTigaHari(@Query("nik") nik:String
@@ -139,4 +139,9 @@ interface ApiEndPoint{
     @GET("/absen/map/area")
     suspend fun getMapArea(@Query("company") company:String?)
             : Response<MapAreaResponse>?
+
+
+    @GET("/absen/user/by")
+    suspend fun getAbsensi(@Query("nik") nik:String?)
+            : Response<AbsensiResponse>?
 }
