@@ -12,6 +12,10 @@ import com.misit.faceidchecklogptabp.services.JobServices
 
 class MapUtilsService:Service() {
     lateinit var mapUtils :MapAreaUtils
+
+    override fun onBind(intent: Intent?): IBinder? {
+        return null
+    }
     override fun onCreate() {
         Log.d("JobScheduler","On Create")
         mapUtils = MapAreaUtils()
@@ -23,20 +27,34 @@ class MapUtilsService:Service() {
         super.onCreate()
     }
 
-    override fun onBind(intent: Intent?): IBinder? {
-        Log.d("JobScheduler","onBind")
-        return null
-    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d("JobScheduler","onStartCommand")
+        intent.let {
+            when(it!!.action){
+                Constants.SERVICE_START -> showNotification()
+                Constants.SERVICE_STOP -> serviceStop()
+            }
+        }
+
+        return super.onStartCommand(intent, flags, startId)
+    }
+    private fun showNotification(){
         mapUtils.getMapArea(this@MapUtilsService,COMPANY,NIK)
         processWork(this@MapUtilsService,"onStartCommand")
-        return super.onStartCommand(intent, flags, startId)
+
     }
     companion object{
         var COMPANY="COMPANY"
         var NIK="NIK"
+    }
+
+    private fun serviceStop(){
+//        sendMessageToActivity("fgTokenService")
+//        manager.cancel(Constants.NOTIFICATION_ID)
+//        stopForeground(true)
+        stopSelf()
+        Log.d("JobScheduler", "Service Stopped!!")
     }
     private fun processWork(c: Context, counter:String){
         Log.d("JobScheduler","processWork")

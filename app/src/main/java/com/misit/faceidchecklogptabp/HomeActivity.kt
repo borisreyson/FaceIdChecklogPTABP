@@ -32,7 +32,6 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.work.*
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
@@ -93,7 +92,6 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
     lateinit var rvLast3Day :RecyclerView
     private var mMap : GoogleMap?= null
     var modelCompany : MutableList<CompanyLocationModel>?= null
-    var workManager: WorkManager?=null
     var abpLocation:LatLng?=null
     var mapFragment:SupportMapFragment?=null
     private val updateClock = object :Runnable{
@@ -189,29 +187,10 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
         loadFragment()
 
 
-        myWork()
         reciever()
 
     }
-    private fun myWork(){
-        Log.d("JobScheduler", "WorkManager")
-        workManager = WorkManager.getInstance(this@HomeActivity)
-        val constraint = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.UNMETERED)
-            .setRequiresCharging(false)
-            .setRequiresBatteryNotLow(false)
-            .build()
-        val myRequest = PeriodicWorkRequest.Builder(
-            FaceIdWorker::class.java,
-            15, TimeUnit.MINUTES
-        ).setConstraints(constraint)
-            .build()
-        workManager?.enqueueUniquePeriodicWork(
-            Constants.FaceWorker,
-            ExistingPeriodicWorkPolicy.KEEP,
-            myRequest
-        )
-    }
+
     override fun onClick(v: View?) {
         if(v?.id==R.id.btnNewMasuk){
             val intent= Intent(this, MasukActivity::class.java)
@@ -316,9 +295,28 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
         }else{
             btnListAllAbsen.visibility=View.GONE
         }
+        workBackground()
         super.onResume()
     }
 
+    private fun workBackground(){
+        var c = this
+        if(!ConfigUtil.isJobServiceOn(c, Constants.JOB_SERVICE_ID)){
+            Log.d("JobScheduler","New Run Service")
+            ConfigUtil.jobScheduler(c,scheduler)
+            processWork(c,"New Run Service")
+            }else{
+            Log.d("JobScheduler","workBackground Service Is Run")
+            processWork(c,"workBackground Service Is Run")
+            }
+    }
+    private fun processWork(c:Context,counter:String){
+        val intent = Intent(applicationContext,HomeActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        var rCode = (100..1000).random()
+        ConfigUtil.showNotification(applicationContext,"Job Scheduler","Notification ${counter}",intent,rCode,"Jobscheduler")
+    }
     override fun onPause() {
         handler.removeCallbacks(updateClock)
         super.onPause()
@@ -725,6 +723,7 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
         mMap?.mapType = MAP_TYPE_SATELLITE
     }
     override fun onMapReady(googleMap: GoogleMap?) {
+        var z =0
         mapAbp?.clear()
         var abpMarker:Marker?=null
         val polylineOptions = PolygonOptions()
@@ -735,6 +734,7 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
                 var latLng = LatLng(it.lat!!, it.lng!!)
                 polylineOptions.add(latLng)
                 mapAbp?.add(latLng)
+            z++
             }
         }catch (e: SQLException){
             Log.d("CurrentLocation", "${e.message}")
@@ -779,17 +779,21 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
             mMap?.animateCamera(cameraUpdate)
 
         }
-
-        val polyline = mMap?.addPolygon(polylineOptions)
-        polyline!!.strokeColor = Color.argb(100, 40, 123, 250)
-        polyline.fillColor= Color.argb(40, 40, 123, 250)
-        var isInside = PolyUtil.containsLocation(userLocation, mapAbp!!, true)
-        Log.d("CurrentLocation", "IsInside ${isInside}")
-        if(isInside){
-            loadAbsen()
+        if(z>0){
+            val polyline = mMap?.addPolygon(polylineOptions)
+            polyline!!.strokeColor = Color.argb(100, 40, 123, 250)
+            polyline.fillColor= Color.argb(40, 40, 123, 250)
+            var isInside = PolyUtil.containsLocation(userLocation, mapAbp!!, true)
+            Log.d("CurrentLocation", "IsInside ${isInside}")
+            if(isInside){
+                loadAbsen()
+            }else{
+                disableAbsen()
+            }
         }else{
             disableAbsen()
         }
+
     }
     private fun disableAbsen(){
         btnNewMasuk.isEnabled=false
