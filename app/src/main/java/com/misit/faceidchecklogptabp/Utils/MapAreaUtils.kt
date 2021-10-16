@@ -1,22 +1,26 @@
 package com.misit.faceidchecklogptabp.Utils
 
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import com.misit.abpenergy.api.ApiClient
 import com.misit.abpenergy.api.ApiEndPoint
 import com.misit.faceidchecklogptabp.DataSource.AbsensiDataSources
 import com.misit.faceidchecklogptabp.DataSource.MapAreaDataSource
+import com.misit.faceidchecklogptabp.HomeActivity
 import com.misit.faceidchecklogptabp.Models.CompanyLocationModel
+import com.misit.faceidchecklogptabp.Models.LastAbsenModels
 import com.misit.faceidchecklogptabp.Models.TigaHariModel
 import com.misit.faceidchecklogptabp.services.JobServices
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import java.sql.SQLException
 
 class MapAreaUtils() {
     var TAG= "JobScheduler"
-    fun getMapArea(c:Context,COMPANY:String,nik:String){
+    suspend fun getMapArea(c:Context,COMPANY:String,nik:String){
         GlobalScope.launch(Dispatchers.IO) {
             var apiEndPoint = ApiClient.getClient(c)?.create(ApiEndPoint::class.java)
             var res = apiEndPoint?.getMapArea(COMPANY)
@@ -44,7 +48,7 @@ class MapAreaUtils() {
             }
         }
     }
-    private fun insertArea(c:Context, item: CompanyLocationModel, idLok:Int,timeUpdate:String,nik:String){
+    suspend private fun insertArea(c:Context, item: CompanyLocationModel, idLok:Int,timeUpdate:String,nik:String){
         var mapArea = MapAreaDataSource(c)
         try {
                 if(mapArea.cekMap(idLok)<=0){
@@ -63,16 +67,16 @@ class MapAreaUtils() {
                         }
                     }
                 }
-            getAbsensi(c,nik)
+            coroutineScope {
+                getAbsensi(c,nik)
+            }
         }catch (e: SQLException){
             Log.d(TAG,"${e.message}")
         }
     }
-    private fun getAbsensi(c:Context,nik:String){
+    suspend private fun getAbsensi(c:Context,nik:String){
         val absensi = AbsensiDataSources(c)
-
         GlobalScope.launch {
-
             var absensiOnline = ApiClient.getClient(c)?.create(ApiEndPoint::class.java)
             var response = absensiOnline?.getAbsensi(nik)
             if(response!=null){
@@ -133,8 +137,40 @@ class MapAreaUtils() {
                     }
                 }
             }
+            processWork(c,"MapAreaUtils")
+
+//            loadAbsen(c,nik)
         }
     }
-    companion object{
+    suspend private fun loadAbsen(c:Context,nik:String){
+        val absensi = AbsensiDataSources(c)
+        val apiEndPoint = ApiClient.getClient(c)?.create(ApiEndPoint::class.java)
+        GlobalScope.launch(Dispatchers.Main) {
+            val call = apiEndPoint?.lastAbsenCorutine(nik)
+            if (call != null) {
+                if (call.isSuccessful) {
+                    absensi.deleteLastAbsen()
+                    val response = call.body()
+                    if (response != null) {
+                        var item = LastAbsenModels()
+                        item.lastAbsen = response.lastAbsen
+                        item.lastNew = response.lastNew
+                        item.masuk = response.masuk
+                        item.pulang = response.pulang
+                        item.tanggal = response.tanggal
+                        absensi.instertLastAbsen(item)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun processWork(c: Context, counter:String){
+        Log.d("JobScheduler","processWork")
+        val intent = Intent(c, HomeActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        var rCode = (100..1000).random()
+        ConfigUtil.showNotification(c,"Maps Utils Service","Notification ${counter}",intent,rCode,"MapUtils")
     }
 }

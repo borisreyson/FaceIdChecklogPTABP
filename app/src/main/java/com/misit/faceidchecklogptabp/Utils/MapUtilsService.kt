@@ -1,17 +1,22 @@
 package com.misit.faceidchecklogptabp.Utils
 
-import android.app.IntentService
-import android.app.Service
+import android.app.*
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.JobIntentService
 import com.misit.faceidchecklogptabp.HomeActivity
+import com.misit.faceidchecklogptabp.R
+import com.misit.faceidchecklogptabp.SplashActivity
 import com.misit.faceidchecklogptabp.services.JobServices
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class MapUtilsService:Service() {
     lateinit var mapUtils :MapAreaUtils
+    lateinit var manager: NotificationManager
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -40,9 +45,16 @@ class MapUtilsService:Service() {
         return super.onStartCommand(intent, flags, startId)
     }
     private fun showNotification(){
-        mapUtils.getMapArea(this@MapUtilsService,COMPANY,NIK)
-        processWork(this@MapUtilsService,"onStartCommand")
-
+        val notificationIntent = Intent(this, SplashActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(this, 1, notificationIntent, 0)
+        val notification = Notification.Builder(this, Constants.CHANNEL_ID).setContentText("Mengambil data....!!!").setSmallIcon(
+                R.drawable.abp_white
+            ).setContentIntent(pendingIntent).build()
+        GlobalScope.launch {
+            mapUtils.getMapArea(this@MapUtilsService,COMPANY,NIK)
+            processWork(this@MapUtilsService,"onStartCommand")
+            startForeground(Constants.NOTIFICATION_ID, notification)
+        }
     }
     companion object{
         var COMPANY="COMPANY"
@@ -51,10 +63,25 @@ class MapUtilsService:Service() {
 
     private fun serviceStop(){
 //        sendMessageToActivity("fgTokenService")
-//        manager.cancel(Constants.NOTIFICATION_ID)
-//        stopForeground(true)
+        manager.cancel(Constants.NOTIFICATION_ID)
+        stopForeground(true)
         stopSelf()
         Log.d("JobScheduler", "Service Stopped!!")
+    }
+
+    private fun createNotificationChannel(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            val serviceChannel = NotificationChannel(
+                Constants.CHANNEL_ID,
+                "Saving Service Channel",
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+            manager = getSystemService(
+                NotificationManager::class.java
+            )
+            manager.createNotificationChannel(serviceChannel)
+        }
+
     }
     private fun processWork(c: Context, counter:String){
         Log.d("JobScheduler","processWork")

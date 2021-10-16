@@ -16,12 +16,14 @@ class LocationService: Service() {
     var TAG ="LocationService"
     lateinit var manager: NotificationManager
     lateinit var getLocation : GetLocation
-
+    lateinit var notificationIntent:Intent
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
 
     override fun onCreate() {
+        notificationIntent = Intent(this, SplashActivity::class.java)
+
         getLocation = GetLocation(this@LocationService)
         createNotificationChannel()
 
@@ -37,7 +39,6 @@ class LocationService: Service() {
         return super.onStartCommand(intent, flags, startId)
     }
     private fun showNotification() {
-        val notificationIntent = Intent(this, SplashActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(this, 1, notificationIntent, 0)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notification =

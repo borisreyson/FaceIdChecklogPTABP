@@ -5,6 +5,7 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import androidx.core.database.getIntOrNull
+import com.misit.faceidchecklogptabp.Models.LastAbsenModels
 import com.misit.faceidchecklogptabp.Models.TigaHariModel
 import com.misit.faceidchecklogptabp.SQLite.DbHelper
 
@@ -38,6 +39,51 @@ class AbsensiDataSources(val c: Context) {
         return 0
     }
 
+    fun getItem(nik: String,status:String): TigaHariModel {
+        openAccess()
+        val c = sqlDatabase?.rawQuery("SELECT * FROM "+
+                "$tbItem WHERE nik = ? and status =? order by id desc", arrayOf(nik,status))
+        c?.moveToFirst()
+        var itemModels = TigaHariModel()
+        c?.let {
+            itemModels = fetchRow(it)
+        }
+        c?.close()
+        closeAccess()
+        return itemModels
+    }
+
+    fun lastAbsen(): LastAbsenModels {
+        var itemModels = LastAbsenModels()
+        openAccess()
+        val c = sqlDatabase?.rawQuery("SELECT * FROM "+
+                "$tbLastAbsen", null)
+        c?.moveToFirst()
+        c?.let {
+            itemModels = rowLastAbsen(it)
+        }
+        c?.close()
+        closeAccess()
+        return itemModels!!
+    }
+
+    fun getAll(nik: String): ArrayList<TigaHariModel> {
+        val listItem : ArrayList<TigaHariModel> = ArrayList()
+        openAccess()
+        val c = sqlDatabase?.rawQuery("SELECT * FROM "+
+                "$tbItem WHERE nik = ? ORDER BY id", arrayOf(nik))
+        if(c!!.moveToFirst()){
+            do {
+                listItem?.add(fetchRow(c))
+            }while (c.moveToNext())
+
+        }
+        c?.close()
+        closeAccess()
+        return listItem!!
+    }
+
+
     fun cekById(id: String): Int {
         openAccess()
         val c = sqlDatabase?.rawQuery("SELECT count(*) FROM "+
@@ -59,6 +105,36 @@ class AbsensiDataSources(val c: Context) {
         return hasil!!
     }
 
+    fun instertLastAbsen(item: LastAbsenModels):Long{
+        openAccess()
+        var cv = cvLastAbsen(item)
+        var hasil = sqlDatabase?.insertOrThrow("$tbLastAbsen",null,cv)
+        closeAccess()
+        return hasil!!
+    }
+    fun deleteLastAbsen():Boolean{
+        openAccess()
+        val hasil = sqlDatabase?.delete("$tbLastAbsen",null,null)
+        if(hasil!! <0 ){
+            return false
+        }
+        closeAccess()
+        return true
+    }
+    private fun rowLastAbsen(cursor: Cursor): LastAbsenModels{
+        val lastAbsen = cursor.getString(cursor.getColumnIndex("lastAbsen"))
+        val lastNew = cursor.getString(cursor.getColumnIndex("lastNew"))
+        val masuk = cursor.getString(cursor.getColumnIndex("masuk"))
+        val pulang = cursor.getString(cursor.getColumnIndex("pulang"))
+        val tanggal = cursor.getString(cursor.getColumnIndex("tanggal"))
+        val items = LastAbsenModels()
+        items.lastAbsen = lastAbsen
+        items.lastNew = lastNew
+        items.masuk = masuk
+        items.pulang = pulang
+        items.tanggal = tanggal
+        return items
+    }
     private fun fetchRow(cursor: Cursor): TigaHariModel {
         val id = cursor.getInt(cursor.getColumnIndex("id"))
         val id_roster = cursor.getString(cursor.getColumnIndex("id_roster"))
@@ -133,6 +209,16 @@ class AbsensiDataSources(val c: Context) {
         closeAccess()
         return true
     }
+    private fun cvLastAbsen(item : LastAbsenModels): ContentValues {
+        var items = ContentValues()
+        items.put("lastAbsen",item.lastAbsen)
+        items.put("lastNew",item.lastNew)
+        items.put("masuk",item.masuk)
+        items.put("pulang",item.pulang)
+        items.put("tanggal",item.tanggal)
+        return items
+
+    }
     private fun createCV(item : TigaHariModel): ContentValues {
         var items = ContentValues()
         items.put("id",item.id)
@@ -159,5 +245,6 @@ class AbsensiDataSources(val c: Context) {
     }
     companion object{
         val tbItem = "ABSENSI"
+        val tbLastAbsen = "lastAbsen"
     }
 }

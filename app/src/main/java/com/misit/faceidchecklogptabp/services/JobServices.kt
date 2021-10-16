@@ -5,16 +5,11 @@ import android.app.job.JobService
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import com.misit.abpenergy.api.ApiClient
-import com.misit.abpenergy.api.ApiEndPoint
-import com.misit.faceidchecklogptabp.DataSource.MapAreaDataSource
 import com.misit.faceidchecklogptabp.HomeActivity
-import com.misit.faceidchecklogptabp.Models.CompanyLocationModel
 import com.misit.faceidchecklogptabp.Utils.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import java.sql.SQLException
 
 class JobServices: JobService() {
     private var TAG="JobScheduler"
@@ -26,8 +21,8 @@ class JobServices: JobService() {
         mapUtils = MapAreaUtils()
         PrefsUtil.initInstance(this@JobServices)
         if(PrefsUtil.getInstance().getBooleanState(PrefsUtil.IS_LOGGED_IN,false)){
-            MapUtilsService.COMPANY = PrefsUtil.getInstance().getStringState("PERUSAHAAN","")
-            MapUtilsService.NIK = PrefsUtil.getInstance().getStringState(PrefsUtil.NIK,"")
+            COMPANY = PrefsUtil.getInstance().getStringState("PERUSAHAAN","")
+            NIK = PrefsUtil.getInstance().getStringState(PrefsUtil.NIK,"")
         }
         super.onCreate()
     }
@@ -43,10 +38,11 @@ class JobServices: JobService() {
     }
 
     private fun showNotification(){
-        mapUtils.getMapArea(this@JobServices, MapUtilsService.COMPANY, MapUtilsService.NIK)
-        processWork(this@JobServices,"onStartCommand")
+        GlobalScope.launch(Dispatchers.IO) {
+            mapUtils.getMapArea(this@JobServices, COMPANY, MapUtilsService.NIK)
+            processWork(this@JobServices,"onStartCommand")
+        }
     }
-
     private fun processWork(c: Context, counter:String){
         Log.d("JobScheduler","processWork")
         val intent = Intent(applicationContext, HomeActivity::class.java).apply {
@@ -60,5 +56,9 @@ class JobServices: JobService() {
 //        stopService(bgMapService)
         jobcanceled=true
         return true
+    }
+    companion object{
+        var COMPANY="COMPANY"
+        var NIK="NIK"
     }
 }

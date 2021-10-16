@@ -47,6 +47,7 @@ import com.misit.abpenergy.api.ApiClient
 import com.misit.abpenergy.api.ApiEndPoint
 import com.misit.faceidchecklogptabp.Absen.v1.*
 import com.misit.faceidchecklogptabp.Adapter.Last3DaysAdapter
+import com.misit.faceidchecklogptabp.DataSource.AbsensiDataSources
 import com.misit.faceidchecklogptabp.DataSource.MapAreaDataSource
 import com.misit.faceidchecklogptabp.Models.CompanyLocationModel
 import com.misit.faceidchecklogptabp.Response.AbsenTigaHariItem
@@ -184,9 +185,6 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
         userLocation =LatLng(LAT, LNG)
         abpLocation = LatLng(-0.5634222, 117.0139606)
         state = 0
-        loadFragment()
-
-
         reciever()
 
     }
@@ -242,6 +240,7 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
     }
     //    androidToken
     override fun onResume() {
+        loadFragment()
         LocalBroadcastManager.getInstance(this@HomeActivity).registerReceiver(
             tokenPassingReceiver!!, IntentFilter(
                 Constants.APP_ID
@@ -305,10 +304,10 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
             Log.d("JobScheduler","New Run Service")
             ConfigUtil.jobScheduler(c,scheduler)
             processWork(c,"New Run Service")
-            }else{
+        }else{
             Log.d("JobScheduler","workBackground Service Is Run")
             processWork(c,"workBackground Service Is Run")
-            }
+        }
     }
     private fun processWork(c:Context,counter:String){
         val intent = Intent(applicationContext,HomeActivity::class.java).apply {
@@ -470,6 +469,7 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
                     val response= call.body()
                     if(response!=null){
                         if(response.lastNew!=null){
+                            borderMiddle.visibility = View.VISIBLE
                             if(response.lastNew=="Masuk"){
                                 btnNewPulang.isEnabled=true
                                 btnNewMasuk.isEnabled=true
@@ -528,6 +528,63 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
                 }
             }
         }
+    }
+
+    fun localAbsen(){
+        var absenLokal = AbsensiDataSources(this@HomeActivity)
+            val response = absenLokal?.lastAbsen()
+        Log.d("CurrentLocation","${response}")
+        if(response!=null){
+                        if(response.lastNew!=null){
+                            borderMiddle.visibility = View.VISIBLE
+                            var presensiMasuk = absenLokal.getItem(NIK,"MASUK")
+                            var presensiPulang = absenLokal.getItem(NIK,"PULANG")
+                            if(response.lastNew=="Masuk"){
+                                btnNewPulang.isEnabled=true
+                                btnNewMasuk.isEnabled=true
+                                btnNewMasuk.visibility=View.GONE
+                                btnNewPulang.visibility=View.VISIBLE
+                                tvNewMasuk.visibility=View.VISIBLE
+                                if(presensiMasuk!=null){
+                                    tvNewMasuk.text = "${presensiMasuk?.jam}"
+                                }
+                                tvNewPulang.visibility=View.GONE
+                            }else if(response.lastNew=="Pulang"){
+//                                chkMasuk.isChecked=true
+//                                chkPulang.isChecked=true
+                                btnNewPulang.isEnabled=true
+                                btnNewMasuk.isEnabled=true
+                                btnNewMasuk.visibility=View.VISIBLE
+                                btnNewPulang.visibility=View.GONE
+                                tvNewMasuk.visibility=View.GONE
+                                tvNewPulang.visibility=View.VISIBLE
+                                if(presensiMasuk!=null){
+                                    tvNewMasuk.text = "${presensiMasuk?.jam}"
+                                }
+                                if(presensiPulang!=null){
+                                    tvNewPulang.text = "${presensiPulang?.jam}"
+                                }
+
+                            }else{
+                                btnNewMasuk.isEnabled=true
+                                btnNewPulang.isEnabled=true
+                                btnNewMasuk.visibility=View.VISIBLE
+                                btnNewPulang.visibility=View.VISIBLE
+                                tvNewMasuk.visibility=View.GONE
+                                tvNewPulang.visibility=View.GONE
+                            }
+                            if(btnNewMasuk.isEnabled==false){
+
+                            }
+                        }else{
+                            btnNewMasuk.isEnabled=true
+                            btnNewPulang.isEnabled=true
+                            btnNewMasuk.visibility=View.VISIBLE
+                            btnNewPulang.visibility=View.GONE
+                        }
+                }else {
+                localAbsen()
+            }
     }
 
     private fun loadAbsenTigaHari() {
@@ -680,7 +737,52 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
                             Log.d("ServiceName", tokenData)
                         }
                     }
-
+                }
+            }
+        }
+    }
+    private fun loadFragment(){
+        mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+        mapFragment?.getMapAsync(this)
+    }
+    override fun onMapReady(googleMap: GoogleMap?) {
+        var z =0
+        mapAbp?.clear()
+        var abpMarker:Marker?=null
+        val polylineOptions = PolygonOptions()
+        var mapArea = MapAreaDataSource(this@HomeActivity)
+        try {
+            modelCompany = mapArea.getMaps(PERUSAHAAN)
+            modelCompany?.forEach {
+                var latLng = LatLng(it.lat!!, it.lng!!)
+                polylineOptions.add(latLng)
+                mapAbp?.add(latLng)
+            z++
+            }
+        }catch (e: SQLException){
+            Log.d("CurrentLocation", "${e.message}")
+        }
+        val me = resources.getDrawable(R.drawable.ic_baseline_my_location_24)
+        val dr = resources.getDrawable(R.drawable.abp_marker)
+        val bitmap = dr.toBitmap(100, 100)
+        mMap = googleMap
+        if(state<=0){
+            abpMarker?.remove()
+            abpMarker = mMap?.addMarker(
+                MarkerOptions().position(abpLocation!!).title("PT Alamjaya Bara Pratama").icon(
+                    BitmapDescriptorFactory.fromBitmap(
+                        bitmap
+                    )
+                )
+            )
+            var cameraUpdate = CameraUpdateFactory.newLatLngZoom(abpLocation, 20f)
+            mMap?.animateCamera(cameraUpdate)
+        }
+        var locationReciever = object : BroadcastReceiver() {
+            var z =0
+            override fun onReceive(context: Context, intent: Intent) {
+                val bundle = intent.extras
+                if (bundle != null) {
                     if (bundle.containsKey("fgLat")) {
                         val tokenData = bundle.getString("fgLat")
                         Log.d("CurrentLocation", "Lat : $tokenData")
@@ -706,79 +808,46 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
                             )
                         }else if(tokenData=="false"){
                             state=1
-
                             userLocation =LatLng(LAT, LNG)
-                            loadFragment()
+//                            loadFragment()
                         }
                         Log.d("CurrentLocation", "Gps Mock : $tokenData")
+
+                        if(state>0){
+                            liveLocation?.remove()
+                            liveLocation = mMap?.addMarker(
+                                MarkerOptions().position(userLocation!!).title(NAMA).icon(
+                                    BitmapDescriptorFactory.fromBitmap(
+                                        me.toBitmap(
+                                            80,
+                                            80
+                                        )
+                                    )
+                                )
+                            )
+                            abpMarker?.remove()
+                            abpMarker = mMap?.addMarker(
+                                MarkerOptions().position(abpLocation!!).title("PT Alamjaya Bara Pratama").icon(
+                                    BitmapDescriptorFactory.fromBitmap(
+                                        bitmap
+                                    )
+                                )
+                            )
+                            liveLocation?.showInfoWindow()
+                            var cameraUpdate = CameraUpdateFactory.newLatLngZoom(userLocation, 20f)
+                            mMap?.animateCamera(cameraUpdate)
+
+                        }
                     }
                 }
             }
         }
-    }
+        LocalBroadcastManager.getInstance(this@HomeActivity).registerReceiver(
+            locationReciever!!, IntentFilter(
+                Constants.APP_ID
+            )
+        )
 
-    private fun loadFragment(){
-        mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment?.getMapAsync(this)
-        mMap?.mapType = MAP_TYPE_SATELLITE
-    }
-    override fun onMapReady(googleMap: GoogleMap?) {
-        var z =0
-        mapAbp?.clear()
-        var abpMarker:Marker?=null
-        val polylineOptions = PolygonOptions()
-        var mapArea = MapAreaDataSource(this@HomeActivity)
-        try {
-            modelCompany = mapArea.getMaps(PERUSAHAAN)
-            modelCompany?.forEach {
-                var latLng = LatLng(it.lat!!, it.lng!!)
-                polylineOptions.add(latLng)
-                mapAbp?.add(latLng)
-            z++
-            }
-        }catch (e: SQLException){
-            Log.d("CurrentLocation", "${e.message}")
-        }
-        liveLocation?.remove()
-        val me = resources.getDrawable(R.drawable.ic_baseline_my_location_24)
-        val dr = resources.getDrawable(R.drawable.abp_marker)
-        val bitmap = dr.toBitmap(100, 100)
-        mMap = googleMap
-        if(state<=0){
-            abpMarker?.remove()
-            abpMarker = mMap?.addMarker(
-                MarkerOptions().position(abpLocation!!).title("PT Alamjaya Bara Pratama").icon(
-                    BitmapDescriptorFactory.fromBitmap(
-                        bitmap
-                    )
-                )
-            )
-            var cameraUpdate = CameraUpdateFactory.newLatLngZoom(abpLocation, 20f)
-            mMap?.animateCamera(cameraUpdate)
-        }else{
-            liveLocation = mMap?.addMarker(
-                MarkerOptions().position(userLocation!!).title(NAMA).icon(
-                    BitmapDescriptorFactory.fromBitmap(
-                        me.toBitmap(
-                            80,
-                            80
-                        )
-                    )
-                )
-            )
-            abpMarker?.remove()
-            abpMarker = mMap?.addMarker(
-                MarkerOptions().position(abpLocation!!).title("PT Alamjaya Bara Pratama").icon(
-                    BitmapDescriptorFactory.fromBitmap(
-                        bitmap
-                    )
-                )
-            )
-            liveLocation?.showInfoWindow()
-            var cameraUpdate = CameraUpdateFactory.newLatLngZoom(userLocation, 20f)
-            mMap?.animateCamera(cameraUpdate)
-
-        }
         if(z>0){
             val polyline = mMap?.addPolygon(polylineOptions)
             polyline!!.strokeColor = Color.argb(100, 40, 123, 250)
@@ -786,16 +855,17 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
             var isInside = PolyUtil.containsLocation(userLocation, mapAbp!!, true)
             Log.d("CurrentLocation", "IsInside ${isInside}")
             if(isInside){
-                loadAbsen()
+                localAbsen()
             }else{
-                disableAbsen()
+//                disableAbsen()
             }
         }else{
-            disableAbsen()
+//            disableAbsen()
         }
 
     }
     private fun disableAbsen(){
+        borderMiddle.visibility = View.GONE
         btnNewMasuk.isEnabled=false
         btnNewPulang.isEnabled=false
         btnNewMasuk.visibility=View.GONE
