@@ -22,6 +22,7 @@ class MapUtilsService:Service() {
         return null
     }
     override fun onCreate() {
+        createNotificationChannel()
         Log.d("JobScheduler","On Create")
         mapUtils = MapAreaUtils()
         PrefsUtil.initInstance(this@MapUtilsService)
@@ -52,7 +53,7 @@ class MapUtilsService:Service() {
             ).setContentIntent(pendingIntent).build()
         GlobalScope.launch {
             mapUtils.getMapArea(this@MapUtilsService,COMPANY,NIK)
-            processWork(this@MapUtilsService,"onStartCommand")
+//            processWork(this@MapUtilsService,"onStartCommand")
             startForeground(Constants.NOTIFICATION_ID, notification)
         }
     }

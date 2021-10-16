@@ -248,6 +248,11 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
         )
         if(ConfigUtil.isJobServiceOn(this@HomeActivity, Constants.JOB_SERVICE_ID)){
             Log.d("JobScheduler", "Service Is Running")
+            var cekMap = MapAreaDataSource(this)
+            var dataMap = cekMap.getMaps(PERUSAHAAN)
+            if(dataMap.size<=0){
+                ConfigUtil.jobScheduler(this@HomeActivity, scheduler)
+            }
         }else{
             Log.d("JobScheduler", "New Run Job Scheduler")
             ConfigUtil.jobScheduler(this@HomeActivity, scheduler)
