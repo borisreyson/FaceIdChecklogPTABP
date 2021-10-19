@@ -3,10 +3,7 @@ package com.misit.faceidchecklogptabp
 import android.Manifest
 import android.app.DatePickerDialog
 import android.app.job.JobScheduler
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
 import android.content.pm.PackageManager
 import android.graphics.*
 import android.graphics.drawable.ColorDrawable
@@ -51,10 +48,7 @@ import com.misit.faceidchecklogptabp.DataSource.AbsensiDataSources
 import com.misit.faceidchecklogptabp.DataSource.MapAreaDataSource
 import com.misit.faceidchecklogptabp.Models.CompanyLocationModel
 import com.misit.faceidchecklogptabp.Response.AbsenTigaHariItem
-import com.misit.faceidchecklogptabp.Utils.ConfigUtil
-import com.misit.faceidchecklogptabp.Utils.Constants
-import com.misit.faceidchecklogptabp.Utils.PopupUtil
-import com.misit.faceidchecklogptabp.Utils.PrefsUtil
+import com.misit.faceidchecklogptabp.Utils.*
 import com.misit.faceidchecklogptabp.services.FaceIdWorker
 import com.misit.faceidchecklogptabp.services.LocationService
 import kotlinx.android.synthetic.main.activity_home.*
@@ -75,14 +69,10 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
     lateinit var handler : Handler
     lateinit var tm : TelephonyManager
     private var IMEI :String?=null
-    private var csrf_token : String?=""
     private var jamSekarang : Int=0
     private var menitSekarang : Int=0
     private var detikSekarang : Int=0
     var tipe :String?=null
-    private var app_version : String?=""
-    private var mLocationManager : LocationManager?=null
-    private var mLocation : Location?= null
     lateinit var mAdView : AdView
     lateinit var viewPassword: View
     lateinit var alertDialog: AlertDialog
@@ -95,12 +85,14 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
     var modelCompany : MutableList<CompanyLocationModel>?= null
     var abpLocation:LatLng?=null
     var mapFragment:SupportMapFragment?=null
+    var z =0
     private val updateClock = object :Runnable{
         override fun run() {
             doJob()
             handler.postDelayed(this, 1000)
         }
     }
+    lateinit var bgMapService : Intent
     private var scheduler : JobScheduler?=null
     var userLocation :LatLng? = null
     var liveLocation = mMap?.addMarker(MarkerOptions().position(userLocation!!).title(NAMA))
@@ -109,8 +101,6 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
         scheduler = getSystemService(JOB_SCHEDULER_SERVICE) as JobScheduler
-//        mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-//        mapFragment?.getMapAsync(this)
         tvJam.text =""
         androidToken()
         var intPerm :Int= ContextCompat.checkSelfPermission(
@@ -152,6 +142,8 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
             startActivity(Intent(this@HomeActivity, SplashActivity::class.java))
             finish()
         }
+        bgMapService = Intent(this@HomeActivity, MapUtilsService::class.java)
+
         tipe = intent.getStringExtra(TIPE)
         if(tipe=="terlambat"){
 //            listAbsen()
@@ -175,6 +167,7 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
         btnListAllAbsen.setOnClickListener(this)
         lpAbsenMasuk.setOnClickListener(this)
         lpAbsenPulang.setOnClickListener(this)
+        lupaAbsen.setOnClickListener(this)
 //        if (!Python.isStarted()) {
 //            Python.start(AndroidPlatform(this))
 //        }
@@ -216,6 +209,9 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
         }else{
             btnNewLupaAbsen.collapse()
         }
+        if(v?.id==R.id.lupaAbsen){
+            lupaAbsen(this@HomeActivity)
+        }
     }
     fun listAbsen(){
         val intent= Intent(this, ListAbsenActivity::class.java)
@@ -246,17 +242,7 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
                 Constants.APP_ID
             )
         )
-        if(ConfigUtil.isJobServiceOn(this@HomeActivity, Constants.JOB_SERVICE_ID)){
-            Log.d("JobScheduler", "Service Is Running")
-            var cekMap = MapAreaDataSource(this)
-            var dataMap = cekMap.getMaps(PERUSAHAAN)
-            if(dataMap.size<=0){
-                ConfigUtil.jobScheduler(this@HomeActivity, scheduler)
-            }
-        }else{
-            Log.d("JobScheduler", "New Run Job Scheduler")
-            ConfigUtil.jobScheduler(this@HomeActivity, scheduler)
-        }
+
         MobileAds.initialize(this) {}
         mAdView = findViewById(R.id.adViewIndex)
         val adRequest = AdRequest.Builder().build()
@@ -304,22 +290,57 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
     }
 
     private fun workBackground(){
-        var c = this
-        if(!ConfigUtil.isJobServiceOn(c, Constants.JOB_SERVICE_ID)){
-            Log.d("JobScheduler","New Run Service")
-            ConfigUtil.jobScheduler(c,scheduler)
-            processWork(c,"New Run Service")
-        }else{
-            Log.d("JobScheduler","workBackground Service Is Run")
-            processWork(c,"workBackground Service Is Run")
+        if(ConfigUtil.isJobServiceOn(this@HomeActivity, Constants.JOB_SERVICE_ID)){
+            var cekMap = MapAreaDataSource(this)
+            var absensi = AbsensiDataSources(this)
+            var dataMap = cekMap.getMaps(PERUSAHAAN)
+            if(dataMap.size<=0){
+                Log.d("JobScheduler", "Service Is Running dataMap")
+
+                ConfigUtil.jobScheduler(this@HomeActivity, scheduler)
+            }else{
+                Log.d("JobScheduler", "Service Is Running MAP Not Null")
+
+                var ceklog =absensi.cekAbsensi(NIK)
+                if(ceklog<=0){
+                    Log.d("JobScheduler", "Service Is Running ceklog")
+                    cekMap.deleteAll()
+                    ConfigUtil.jobScheduler(this@HomeActivity, scheduler)
+                }else{
+
+                    if(absensi.cekLastAbsen()<=0){
+                        Log.d("JobScheduler", "Service Is Running lastAbsen")
+                        cekMap.deleteAll()
+                        ConfigUtil.jobScheduler(this@HomeActivity, scheduler)
+                    }
+                }
+            }
+        }else {
+            Log.d("JobScheduler", "New Run Job Scheduler")
+            ConfigUtil.jobScheduler(this@HomeActivity, scheduler)
+            var cekMap = MapAreaDataSource(this)
+            var absensi = AbsensiDataSources(this)
+            var dataMap = cekMap.getMaps(PERUSAHAAN)
+            if (dataMap.size <= 0) {
+                Log.d("JobScheduler", "Service Is Running dataMap")
+                startService(bgMapService)
+            } else {
+                Log.d("JobScheduler", "Service Is Running MAP Not Null")
+
+                var ceklog = absensi.cekAbsensi(NIK)
+                if (ceklog <= 0) {
+                    Log.d("JobScheduler", "Service Is Running ceklog")
+                    cekMap.deleteAll()
+                    startService(bgMapService)
+                } else {
+                    if (absensi.cekLastAbsen()<=0) {
+                        Log.d("JobScheduler", "Service Is Running lastAbsen")
+                        cekMap.deleteAll()
+                        startService(bgMapService)
+                    }
+                }
+            }
         }
-    }
-    private fun processWork(c:Context,counter:String){
-        val intent = Intent(applicationContext,HomeActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        }
-        var rCode = (100..1000).random()
-        ConfigUtil.showNotification(applicationContext,"Job Scheduler","Notification ${counter}",intent,rCode,"Jobscheduler")
     }
     override fun onPause() {
         handler.removeCallbacks(updateClock)
@@ -536,60 +557,68 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
     }
 
     fun localAbsen(){
-        var absenLokal = AbsensiDataSources(this@HomeActivity)
+        try {
+            var absenLokal = AbsensiDataSources(this@HomeActivity)
             val response = absenLokal?.lastAbsen()
-        Log.d("CurrentLocation","${response}")
-        if(response!=null){
-                        if(response.lastNew!=null){
-                            borderMiddle.visibility = View.VISIBLE
-                            var presensiMasuk = absenLokal.getItem(NIK,"MASUK")
-                            var presensiPulang = absenLokal.getItem(NIK,"PULANG")
-                            if(response.lastNew=="Masuk"){
-                                btnNewPulang.isEnabled=true
-                                btnNewMasuk.isEnabled=true
-                                btnNewMasuk.visibility=View.GONE
-                                btnNewPulang.visibility=View.VISIBLE
-                                tvNewMasuk.visibility=View.VISIBLE
-                                if(presensiMasuk!=null){
-                                    tvNewMasuk.text = "${presensiMasuk?.jam}"
-                                }
-                                tvNewPulang.visibility=View.GONE
-                            }else if(response.lastNew=="Pulang"){
+            Log.d("CurrentLocation","Response ${response}")
+            if(response!=null){
+                if(response.lastNew!=null){
+                    borderMiddle.visibility = View.VISIBLE
+                    var presensiMasuk = absenLokal.getItem(NIK,"MASUK")
+                    var presensiPulang = absenLokal.getItem(NIK,"PULANG")
+                    Log.d("CurrentLocation","Response 1 ${presensiMasuk}")
+                    Log.d("CurrentLocation","Response 2 ${presensiPulang}")
+                    Log.d("CurrentLocation","Response 3 ${response.lastNew}")
+                    if(response.lastNew=="Masuk"){
+                        btnNewPulang.isEnabled=true
+                        btnNewMasuk.isEnabled=true
+                        btnNewMasuk.visibility=View.GONE
+                        btnNewPulang.visibility=View.VISIBLE
+                        tvNewMasuk.visibility=View.VISIBLE
+                        if(presensiMasuk!=null){
+                            tvNewMasuk.text = "${presensiMasuk?.jam}"
+                        }
+                        tvNewPulang.visibility=View.GONE
+                    }else if(response.lastNew=="Pulang"){
 //                                chkMasuk.isChecked=true
 //                                chkPulang.isChecked=true
-                                btnNewPulang.isEnabled=true
-                                btnNewMasuk.isEnabled=true
-                                btnNewMasuk.visibility=View.VISIBLE
-                                btnNewPulang.visibility=View.GONE
-                                tvNewMasuk.visibility=View.GONE
-                                tvNewPulang.visibility=View.VISIBLE
-                                if(presensiMasuk!=null){
-                                    tvNewMasuk.text = "${presensiMasuk?.jam}"
-                                }
-                                if(presensiPulang!=null){
-                                    tvNewPulang.text = "${presensiPulang?.jam}"
-                                }
-
-                            }else{
-                                btnNewMasuk.isEnabled=true
-                                btnNewPulang.isEnabled=true
-                                btnNewMasuk.visibility=View.VISIBLE
-                                btnNewPulang.visibility=View.VISIBLE
-                                tvNewMasuk.visibility=View.GONE
-                                tvNewPulang.visibility=View.GONE
-                            }
-                            if(btnNewMasuk.isEnabled==false){
-
-                            }
-                        }else{
-                            btnNewMasuk.isEnabled=true
-                            btnNewPulang.isEnabled=true
-                            btnNewMasuk.visibility=View.VISIBLE
-                            btnNewPulang.visibility=View.GONE
+                        btnNewPulang.isEnabled=true
+                        btnNewMasuk.isEnabled=true
+                        btnNewMasuk.visibility=View.VISIBLE
+                        btnNewPulang.visibility=View.GONE
+                        tvNewMasuk.visibility=View.GONE
+                        tvNewPulang.visibility=View.VISIBLE
+                        if(presensiMasuk!=null){
+                            tvNewMasuk.text = "${presensiMasuk?.jam}"
                         }
-                }else {
+                        if(presensiPulang!=null){
+                            tvNewPulang.text = "${presensiPulang?.jam}"
+                        }
+
+                    }else{
+                        btnNewMasuk.isEnabled=true
+                        btnNewPulang.isEnabled=true
+                        btnNewMasuk.visibility=View.VISIBLE
+                        btnNewPulang.visibility=View.VISIBLE
+                        tvNewMasuk.visibility=View.GONE
+                        tvNewPulang.visibility=View.GONE
+                    }
+                    if(btnNewMasuk.isEnabled==false){
+
+                    }
+                }else{
+                    btnNewMasuk.isEnabled=true
+                    btnNewPulang.isEnabled=true
+                    btnNewMasuk.visibility=View.VISIBLE
+                    btnNewPulang.visibility=View.GONE
+                }
+            }else {
                 localAbsen()
             }
+        }catch (e:Exception){
+            Log.d("CurrentLocation","5 ${e.message}")
+        }
+
     }
 
     private fun loadAbsenTigaHari() {
@@ -751,22 +780,10 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
         mapFragment?.getMapAsync(this)
     }
     override fun onMapReady(googleMap: GoogleMap?) {
-        var z =0
-        mapAbp?.clear()
+        var mapArea = MapAreaDataSource(this@HomeActivity)
         var abpMarker:Marker?=null
         val polylineOptions = PolygonOptions()
-        var mapArea = MapAreaDataSource(this@HomeActivity)
-        try {
-            modelCompany = mapArea.getMaps(PERUSAHAAN)
-            modelCompany?.forEach {
-                var latLng = LatLng(it.lat!!, it.lng!!)
-                polylineOptions.add(latLng)
-                mapAbp?.add(latLng)
-            z++
-            }
-        }catch (e: SQLException){
-            Log.d("CurrentLocation", "${e.message}")
-        }
+
         val me = resources.getDrawable(R.drawable.ic_baseline_my_location_24)
         val dr = resources.getDrawable(R.drawable.abp_marker)
         val bitmap = dr.toBitmap(100, 100)
@@ -817,7 +834,7 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
 //                            loadFragment()
                         }
                         Log.d("CurrentLocation", "Gps Mock : $tokenData")
-
+                        adPolygon(mapArea,polylineOptions)
                         if(state>0){
                             liveLocation?.remove()
                             liveLocation = mMap?.addMarker(
@@ -853,21 +870,54 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
             )
         )
 
-        if(z>0){
-            val polyline = mMap?.addPolygon(polylineOptions)
-            polyline!!.strokeColor = Color.argb(100, 40, 123, 250)
-            polyline.fillColor= Color.argb(40, 40, 123, 250)
-            var isInside = PolyUtil.containsLocation(userLocation, mapAbp!!, true)
-            Log.d("CurrentLocation", "IsInside ${isInside}")
-            if(isInside){
-                localAbsen()
-            }else{
-//                disableAbsen()
-            }
-        }else{
-//            disableAbsen()
-        }
 
+
+    }
+    private fun adPolygon(mapArea:MapAreaDataSource,polylineOptions:PolygonOptions){
+        mapAbp?.clear()
+        try {
+            modelCompany = mapArea.getMaps(PERUSAHAAN)
+            modelCompany?.forEach {
+                var latLng = LatLng(it.lat!!, it.lng!!)
+                polylineOptions.add(latLng)
+                mapAbp?.add(latLng)
+                z++
+            }
+            if(z>0){
+                val polyline = mMap?.addPolygon(polylineOptions)
+                polyline!!.strokeColor = Color.argb(100, 40, 123, 250)
+                polyline.fillColor= Color.argb(40, 40, 123, 250)
+                var isInside = PolyUtil.containsLocation(userLocation, mapAbp!!, true)
+                if(isInside){
+                    Log.d("CurrentLocation", "IsInside ${isInside}")
+                localAbsen()
+                }else{
+                    localAbsen()
+                    Log.d("CurrentLocation", "IsInside ${isInside}")
+//                disableAbsen()
+                }
+            }else{
+                localAbsen()
+                Log.d("CurrentLocation", "IsInside ${z}")
+
+//            disableAbsen()
+            }
+        }catch (e: SQLException){
+            Log.d("CurrentLocation", "${e.message}")
+        }
+    }
+    fun lupaAbsen(c:Context){
+        var item = arrayOf("Lupa Absen Masuk","Lupa Absen Pulang")
+        val alertDialog = AlertDialog.Builder(c)
+        alertDialog.setTitle("Silahkan Pilih")
+        alertDialog!!.setItems(item, { dialog, which ->
+            when (which) {
+                0 ->showDialogLupaMasuk()
+                1 ->showDialogLupaPulang()
+            }
+        })
+        alertDialog.create()
+        alertDialog.show()
     }
     private fun disableAbsen(){
         borderMiddle.visibility = View.GONE

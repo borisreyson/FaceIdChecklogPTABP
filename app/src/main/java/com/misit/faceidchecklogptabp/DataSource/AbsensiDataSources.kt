@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import android.util.Log
 import androidx.core.database.getIntOrNull
 import com.misit.faceidchecklogptabp.Models.LastAbsenModels
 import com.misit.faceidchecklogptabp.Models.TigaHariModel
@@ -53,20 +54,37 @@ class AbsensiDataSources(val c: Context) {
         return itemModels
     }
 
-    fun lastAbsen(): LastAbsenModels {
-        var itemModels = LastAbsenModels()
+    fun lastAbsen(): LastAbsenModels? {
         openAccess()
         val c = sqlDatabase?.rawQuery("SELECT * FROM "+
                 "$tbLastAbsen", null)
-        c?.moveToFirst()
         c?.let {
-            itemModels = rowLastAbsen(it)
+            if(c!!.moveToFirst() ) {
+                val sendItem = rowLastAbsen(c!!)
+                Log.d("sendItem","${sendItem.tanggal}")
+                if(sendItem!=null){
+                    return sendItem
+                    c?.close()
+                    closeAccess()
+                }
+            }
+        }
+        return null
+    }
+
+    fun cekLastAbsen(): Int {
+        openAccess()
+        val c = sqlDatabase?.rawQuery("SELECT count(*) FROM "+
+                "${tbLastAbsen}",null)
+        c?.let {
+            if(it.moveToFirst()){
+                return it?.getIntOrNull(0) ?: 0
+            }
         }
         c?.close()
         closeAccess()
-        return itemModels!!
+        return 0
     }
-
     fun getAll(nik: String): ArrayList<TigaHariModel> {
         val listItem : ArrayList<TigaHariModel> = ArrayList()
         openAccess()
@@ -211,6 +229,7 @@ class AbsensiDataSources(val c: Context) {
     }
     private fun cvLastAbsen(item : LastAbsenModels): ContentValues {
         var items = ContentValues()
+        items.put("idLastAbsen",item.idLastAbsen)
         items.put("lastAbsen",item.lastAbsen)
         items.put("lastNew",item.lastNew)
         items.put("masuk",item.masuk)

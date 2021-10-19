@@ -31,9 +31,13 @@ class LocationService: Service() {
     }
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent.let {
-            when(it!!.action){
-                Constants.SERVICE_START -> showNotification()
-                Constants.SERVICE_STOP -> stopService()
+            if(it!=null){
+                when(it.action){
+                    Constants.SERVICE_START -> showNotification()
+                    Constants.SERVICE_STOP -> stopService()
+                }
+            }else{
+                showNotification()
             }
         }
         return super.onStartCommand(intent, flags, startId)

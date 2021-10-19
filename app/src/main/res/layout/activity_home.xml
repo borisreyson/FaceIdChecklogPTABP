@@ -183,6 +183,7 @@
             android:orientation="horizontal"
             >
             <Button
+                android:id="@+id/lupaAbsen"
                 android:layout_marginLeft="5dp"
                 android:layout_marginRight="2.5dp"
                 android:backgroundTint="@color/red_smooth"

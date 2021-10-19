@@ -67,79 +67,83 @@ class MapAreaUtils() {
                         }
                     }
                 }
-            coroutineScope {
-                getAbsensi(c,nik)
-            }
+
         }catch (e: SQLException){
             Log.d(TAG,"${e.message}")
+        }
+        coroutineScope {
+            getAbsensi(c,nik)
         }
     }
     suspend private fun getAbsensi(c:Context,nik:String){
         val absensi = AbsensiDataSources(c)
-        GlobalScope.launch {
-            var absensiOnline = ApiClient.getClient(c)?.create(ApiEndPoint::class.java)
-            var response = absensiOnline?.getAbsensi(nik)
-            if(response!=null){
-                if (response.isSuccessful){
-                    var res = response.body()
-                    if(res!=null){
-                        var absen = res.absensi
-                        if(absen!=null){
-                            absen.forEach{
-                                val result = absensi.cekById("${it.id}")
-                                if(result<=0){
-                                    var item = TigaHariModel()
-                                    item.id = it.id
-                                    item.id_roster = it.idRoster
-                                    item.nik = it.nik
-                                    item.tanggal = it.tanggal
-                                    item.jam = it.jam
-                                    item.gambar = it.gambar
-                                    item.status = it.status
-                                    item.face_id = it.faceId
-                                    item.flag = "${it.flag}}"
-                                    item.OFF = "${it.oFF}"
-                                    item.IZIN_BERBAYAR = "${it.iZINBERBAYAR}"
-                                    item.ALPA = "${it.aLPA}"
-                                    item.CR = "${it.cR}"
-                                    item.CT = "${it.cT}"
-                                    item.SAKIT = "${it.sAKIT}"
-                                    item.lupa_absen = it.lupaAbsen
-                                    item.lat = "${it.lat}"
-                                    item.lng = "${it.lat}"
-                                    item.timeIn = it.timeIn
-                                    absensi.insertItem(item)
-                                }else{
-                                    var item = TigaHariModel()
-                                    item.id = it.id
-                                    item.id_roster = it.idRoster
-                                    item.nik = it.nik
-                                    item.tanggal = it.tanggal
-                                    item.jam = it.jam
-                                    item.gambar = it.gambar
-                                    item.status = it.status
-                                    item.face_id = it.faceId
-                                    item.flag = "${it.flag}"
-                                    item.OFF = "${it.oFF}"
-                                    item.IZIN_BERBAYAR = "${it.iZINBERBAYAR}"
-                                    item.ALPA = "${it.aLPA}"
-                                    item.CR = "${it.cR}"
-                                    item.CT = "${it.cT}"
-                                    item.SAKIT = "${it.sAKIT}"
-                                    item.lupa_absen = it.lupaAbsen
-                                    item.lat = "${it.lat}"
-                                    item.lng = "${it.lat}"
-                                    item.timeIn = it.timeIn
-                                    absensi.updateItem(item,it.id!!)
+        if(nik!=null || nik != "NIK") {
+            GlobalScope.launch {
+                var absensiOnline = ApiClient.getClient(c)?.create(ApiEndPoint::class.java)
+                var response = absensiOnline?.getAbsensi(nik)
+                if (response != null) {
+                    if (response.isSuccessful) {
+                        var res = response.body()
+                        if (res != null) {
+                            var absen = res.absensi
+                            if (absen != null) {
+                                absen.forEach {
+                                    val result = absensi.cekById("${it.id}")
+                                    if (result <= 0) {
+                                        var item = TigaHariModel()
+                                        item.id = it.id
+                                        item.id_roster = it.idRoster
+                                        item.nik = it.nik
+                                        item.tanggal = it.tanggal
+                                        item.jam = it.jam
+                                        item.gambar = it.gambar
+                                        item.status = it.status
+                                        item.face_id = it.faceId
+                                        item.flag = "${it.flag}}"
+                                        item.OFF = "${it.oFF}"
+                                        item.IZIN_BERBAYAR = "${it.iZINBERBAYAR}"
+                                        item.ALPA = "${it.aLPA}"
+                                        item.CR = "${it.cR}"
+                                        item.CT = "${it.cT}"
+                                        item.SAKIT = "${it.sAKIT}"
+                                        item.lupa_absen = it.lupaAbsen
+                                        item.lat = "${it.lat}"
+                                        item.lng = "${it.lat}"
+                                        item.timeIn = it.timeIn
+                                        absensi.insertItem(item)
+                                    } else {
+                                        var item = TigaHariModel()
+                                        item.id = it.id
+                                        item.id_roster = it.idRoster
+                                        item.nik = it.nik
+                                        item.tanggal = it.tanggal
+                                        item.jam = it.jam
+                                        item.gambar = it.gambar
+                                        item.status = it.status
+                                        item.face_id = it.faceId
+                                        item.flag = "${it.flag}"
+                                        item.OFF = "${it.oFF}"
+                                        item.IZIN_BERBAYAR = "${it.iZINBERBAYAR}"
+                                        item.ALPA = "${it.aLPA}"
+                                        item.CR = "${it.cR}"
+                                        item.CT = "${it.cT}"
+                                        item.SAKIT = "${it.sAKIT}"
+                                        item.lupa_absen = it.lupaAbsen
+                                        item.lat = "${it.lat}"
+                                        item.lng = "${it.lat}"
+                                        item.timeIn = it.timeIn
+                                        absensi.updateItem(item, it.id!!)
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-            processWork(c,"MapAreaUtils")
+
+                loadAbsen(c, nik)
 
 //            loadAbsen(c,nik)
+            }
         }
     }
     suspend private fun loadAbsen(c:Context,nik:String){
@@ -153,12 +157,20 @@ class MapAreaUtils() {
                     val response = call.body()
                     if (response != null) {
                         var item = LastAbsenModels()
+                        item.idLastAbsen = 1
                         item.lastAbsen = response.lastAbsen
                         item.lastNew = response.lastNew
                         item.masuk = response.masuk
                         item.pulang = response.pulang
                         item.tanggal = response.tanggal
-                        absensi.instertLastAbsen(item)
+                        if(absensi.cekLastAbsen()<=0){
+                            absensi.instertLastAbsen(item)
+                            processWork(c,"Insert last absen")
+                        }else{
+                            if(absensi.deleteLastAbsen()){
+                                absensi.instertLastAbsen(item)
+                            }
+                        }
                     }
                 }
             }

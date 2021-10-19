@@ -99,6 +99,17 @@ class MapAreaDataSource(val c: Context) {
         }
         closeAccess()
     }
+
+    fun deleteAll(){
+        openAccess()
+        val hasil = sqlDatabase?.delete("${tbItem}",null, null)
+        if(hasil!! <0 ){
+            Log.d("Deleted","Gagal Hapus")
+        }else{
+            Log.d("Deleted","Hapus Berhasil")
+        }
+        closeAccess()
+    }
     private fun fetchRow(cursor: Cursor): CompanyLocationModel {
         val idLok = cursor.getInt(cursor.getColumnIndex("idLok"))
         val company = cursor.getString(cursor.getColumnIndex("company"))

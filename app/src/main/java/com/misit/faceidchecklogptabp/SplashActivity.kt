@@ -81,7 +81,6 @@ class SplashActivity  : AppCompatActivity() {
         cekLogin()
         gps()
 
-        LocalBroadcastManager.getInstance(this@SplashActivity).registerReceiver(tokenPassingReceiver!!, IntentFilter(Constants.APP_ID))
 
         super.onResume()
     }

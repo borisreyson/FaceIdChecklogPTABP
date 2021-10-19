@@ -37,9 +37,13 @@ class MapUtilsService:Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d("JobScheduler","onStartCommand")
         intent.let {
-            when(it!!.action){
-                Constants.SERVICE_START -> showNotification()
-                Constants.SERVICE_STOP -> serviceStop()
+            if(it!=null){
+                when(it.action){
+                    Constants.SERVICE_START -> showNotification()
+                    Constants.SERVICE_STOP -> serviceStop()
+                }
+            }else{
+                showNotification()
             }
         }
 
