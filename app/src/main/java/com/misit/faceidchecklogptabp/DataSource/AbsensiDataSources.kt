@@ -58,7 +58,7 @@ class AbsensiDataSources(val c: Context) {
         openAccess()
         val c = sqlDatabase?.rawQuery("SELECT * FROM "+
                 "$tbLastAbsen", null)
-        c?.let {
+        c?.use {
             if(c!!.moveToFirst() ) {
                 val sendItem = rowLastAbsen(c!!)
                 Log.d("sendItem","${sendItem.tanggal}")
@@ -66,7 +66,11 @@ class AbsensiDataSources(val c: Context) {
                     return sendItem
                     c?.close()
                     closeAccess()
+                }else{
+                    c.moveToFirst()
                 }
+            }else{
+                c.moveToFirst()
             }
         }
         return null

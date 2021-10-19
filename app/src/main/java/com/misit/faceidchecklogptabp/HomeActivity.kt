@@ -783,7 +783,6 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
         var mapArea = MapAreaDataSource(this@HomeActivity)
         var abpMarker:Marker?=null
         val polylineOptions = PolygonOptions()
-
         val me = resources.getDrawable(R.drawable.ic_baseline_my_location_24)
         val dr = resources.getDrawable(R.drawable.abp_marker)
         val bitmap = dr.toBitmap(100, 100)
