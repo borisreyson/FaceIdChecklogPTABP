@@ -168,6 +168,7 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
         lpAbsenMasuk.setOnClickListener(this)
         lpAbsenPulang.setOnClickListener(this)
         lupaAbsen.setOnClickListener(this)
+        tvLogOut.setOnClickListener(this)
 //        if (!Python.isStarted()) {
 //            Python.start(AndroidPlatform(this))
 //        }
@@ -212,6 +213,36 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
         if(v?.id==R.id.lupaAbsen){
             lupaAbsen(this@HomeActivity)
         }
+        if(v?.id==R.id.tvLogOut){
+            logout()
+        }
+    }
+    private fun logout() {
+        AlertDialog.Builder(this)
+            .setTitle("Confirmation")
+            .setPositiveButton("OK , Sign Out",{
+                    dialog,
+                    which ->
+                if(PrefsUtil.getInstance().getBooleanState(
+                        PrefsUtil.IS_LOGGED_IN,true)){
+                    PrefsUtil.getInstance().setBooleanState(
+                        PrefsUtil.IS_LOGGED_IN,false)
+                    PrefsUtil.getInstance().setStringState(
+                        PrefsUtil.NAMA_LENGKAP,null)
+                    PrefsUtil.getInstance().setStringState(
+                        PrefsUtil.NIK,null)
+                    val intent = Intent(this,LoginActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                }
+            })
+            .setNegativeButton("Cancel",
+                {
+                        dialog,
+                        which ->
+                    dialog.dismiss()
+                })
+            .show()
     }
     fun listAbsen(){
         val intent= Intent(this, ListAbsenActivity::class.java)
@@ -236,6 +267,7 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
     }
     //    androidToken
     override fun onResume() {
+        mapAbp?.clear()
         loadFragment()
         LocalBroadcastManager.getInstance(this@HomeActivity).registerReceiver(
             tokenPassingReceiver!!, IntentFilter(
@@ -613,7 +645,7 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
                     btnNewPulang.visibility=View.GONE
                 }
             }else {
-                localAbsen()
+                loadAbsen()
             }
         }catch (e:Exception){
             Log.d("CurrentLocation","5 ${e.message}")
@@ -783,6 +815,7 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
         var mapArea = MapAreaDataSource(this@HomeActivity)
         var abpMarker:Marker?=null
         val polylineOptions = PolygonOptions()
+        mapAbp?.clear()
         val me = resources.getDrawable(R.drawable.ic_baseline_my_location_24)
         val dr = resources.getDrawable(R.drawable.abp_marker)
         val bitmap = dr.toBitmap(100, 100)
@@ -799,6 +832,8 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
             var cameraUpdate = CameraUpdateFactory.newLatLngZoom(abpLocation, 20f)
             mMap?.animateCamera(cameraUpdate)
         }
+        adPolygon(mapArea,polylineOptions)
+
         var locationReciever = object : BroadcastReceiver() {
             var z =0
             override fun onReceive(context: Context, intent: Intent) {
@@ -833,7 +868,6 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
 //                            loadFragment()
                         }
                         Log.d("CurrentLocation", "Gps Mock : $tokenData")
-                        adPolygon(mapArea,polylineOptions)
                         if(state>0){
                             liveLocation?.remove()
                             liveLocation = mMap?.addMarker(
@@ -873,34 +907,42 @@ class HomeActivity : AppCompatActivity(),View.OnClickListener,
 
     }
     private fun adPolygon(mapArea:MapAreaDataSource,polylineOptions:PolygonOptions){
-        mapAbp?.clear()
+        var polyline:Polygon? = null
         try {
-            modelCompany = mapArea.getMaps(PERUSAHAAN)
-            modelCompany?.forEach {
-                var latLng = LatLng(it.lat!!, it.lng!!)
-                polylineOptions.add(latLng)
-                mapAbp?.add(latLng)
-                z++
-            }
-            if(z>0){
-                val polyline = mMap?.addPolygon(polylineOptions)
-                polyline!!.strokeColor = Color.argb(100, 40, 123, 250)
-                polyline.fillColor= Color.argb(40, 40, 123, 250)
-                var isInside = PolyUtil.containsLocation(userLocation, mapAbp!!, true)
-                if(isInside){
-                    Log.d("CurrentLocation", "IsInside ${isInside}")
-                localAbsen()
+            mapAbp?.clear()
+            if(mapAbp!!.size<=0){
+                modelCompany = mapArea.getMaps(PERUSAHAAN)
+                modelCompany?.forEach {
+                    var latLng = LatLng(it.lat!!, it.lng!!)
+                    polylineOptions.add(latLng)
+                    mapAbp?.add(latLng)
+                    z++
+                }
+                if(z>0){
+                    polyline?.remove()
+                    polyline = mMap?.addPolygon(polylineOptions)
+                    polyline!!.strokeColor = Color.argb(100, 40, 123, 250)
+                    polyline.fillColor= Color.argb(40, 40, 123, 250)
+                    var isInside = PolyUtil.containsLocation(userLocation, mapAbp!!, true)
+                    if(isInside){
+                        Log.d("CurrentLocation", "IsInside ${isInside}")
+                        localAbsen()
+                    }else{
+                        localAbsen()
+                        Log.d("CurrentLocation", "IsInside ${isInside}")
+//                disableAbsen()
+                    }
+                    z=0
                 }else{
                     localAbsen()
-                    Log.d("CurrentLocation", "IsInside ${isInside}")
-//                disableAbsen()
+                    Log.d("CurrentLocation", "IsInside ${z}")
+                    z=0
+//            disableAbsen()
                 }
             }else{
-                localAbsen()
-                Log.d("CurrentLocation", "IsInside ${z}")
-
-//            disableAbsen()
+                mapAbp?.clear()
             }
+
         }catch (e: SQLException){
             Log.d("CurrentLocation", "${e.message}")
         }

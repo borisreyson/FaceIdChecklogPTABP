@@ -31,12 +31,16 @@ import com.misit.abpenergy.api.ApiEndPoint
 import com.misit.faceidchecklogptabp.Response.AbpResponse
 import com.misit.faceidchecklogptabp.Response.CsrfTokenResponse
 import com.misit.faceidchecklogptabp.Response.LoginResponse
+import com.misit.faceidchecklogptabp.Utils.MapAreaUtils
+import com.misit.faceidchecklogptabp.Utils.MapUtilsService
 import com.misit.faceidchecklogptabp.Utils.PopupUtil
 import com.misit.faceidchecklogptabp.Utils.PrefsUtil
+import com.misit.faceidchecklogptabp.services.JobServices
 import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
@@ -50,6 +54,7 @@ class LoginActivity : AppCompatActivity(),View.OnClickListener {
     private var app_version : String?=""
     private var IMEI : String?=""
     lateinit var tm : TelephonyManager
+    lateinit var mapUtils : MapAreaUtils
 
     private var mFirebaseAnalytics: FirebaseAnalytics? = null
     @SuppressLint("MissingPermission")
@@ -58,6 +63,7 @@ class LoginActivity : AppCompatActivity(),View.OnClickListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
         var intPerm :Int= ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
+        mapUtils = MapAreaUtils()
         if(intPerm==PackageManager.PERMISSION_GRANTED){
             tm = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
 
@@ -183,6 +189,9 @@ class LoginActivity : AppCompatActivity(),View.OnClickListener {
                     val usrResponse = call.body()
                     if (usrResponse!=null){
                         if (usrResponse.success!!){
+                            async { mapUtils.getMapArea(this@LoginActivity,
+                                usrResponse.dataLogin?.perusahaan!!, usrResponse.dataLogin?.nik!!) }.await()
+                            Thread.sleep(3000)
                             PopupUtil.dismissDialog()
                             PrefsUtil.getInstance()
                                 .setBooleanState(PrefsUtil.IS_LOGGED_IN,

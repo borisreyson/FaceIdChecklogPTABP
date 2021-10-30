@@ -72,9 +72,7 @@ class SplashActivity  : AppCompatActivity() {
         reciever()
 
     }
-
     override fun onResume() {
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             managePermissions.checkPermissions()
         }
@@ -227,7 +225,8 @@ class SplashActivity  : AppCompatActivity() {
                 updateProgress(android_token)
             } else if (besar == 100) {
                 handler.removeCallbacks(runnable)
-                loadFirst(android_token)
+                loadPage("Index")
+//                loadFirst(android_token)
             }
         }
         handler.postDelayed(runnable, 100)
