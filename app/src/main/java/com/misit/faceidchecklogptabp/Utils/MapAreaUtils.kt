@@ -183,6 +183,6 @@ class MapAreaUtils() {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
         var rCode = (100..1000).random()
-        ConfigUtil.showNotification(c,"Maps Utils Service","Notification ${counter}",intent,rCode,"MapUtils")
+//        ConfigUtil.showNotification(c,"Maps Utils Service","Notification ${counter}",intent,rCode,"MapUtils")
     }
 }
